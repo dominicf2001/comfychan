@@ -2,6 +2,25 @@ package boards
 
 import "github.com/dominicf2001/comfychan/web/views/shared"
 
+templ NewThreadForm() {
+	<form style="display: none;" id="newThreadForm" style="display: ;">
+		<div>
+			<table>
+				<tbody>
+					<tr class="new-thread-form-field">
+						<th>Subject</th>
+						<td><input/></td>
+					</tr>
+					<tr class="new-thread-form-field">
+						<th>Comment</th>
+						<td><textarea></textarea></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</form>
+}
+
 templ Comfy() {
 	@shared.Layout() {
 		<header class="board-header">
@@ -11,6 +30,9 @@ templ Comfy() {
 			</h1>
 			<p>Be comfy fren</p>
 		</header>
-		<button class="new-thread-btn">[New Thread]</button>
+		<div class="new-thread-container">
+			<button _="on click hide me then show #newThreadForm" id="newThreadBtn">[New Thread]</button>
+			@NewThreadForm()
+		</div>
 	}
 }

@@ -51,9 +51,12 @@ body {
     width: 300px;
 }
 
-.new-thread-btn {
-    display: block;
+.new-thread-container {
+    width: max-content;
     margin: auto;
+}
+
+#newThreadBtn {
     margin-top: 12px;
     background: none;
     border: none;
@@ -64,8 +67,25 @@ body {
     cursor: pointer;
 }
 
-.new-thread-btn:hover {
+#newThreadBtn:hover {
     color: #ff0000
+}
+
+.new-thread-form-field {}
+
+.new-thread-form-field th {
+    border: 1px solid black;
+    text-align: left;
+    vertical-align: middle;
+    padding: 4px;
+    background: #98E;
+    font-weight: bold;
+    font-size: .8rem;
+}
+
+.new-thread-form-field td {
+    display: block;
+    margin: 2px;
 }
 
 /* GENERAL LAYOUT */
