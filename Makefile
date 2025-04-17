@@ -12,3 +12,10 @@ live/sync_assets:
 
 live:
 	make -j2 live/templ live/sync_assets
+
+db/seed:
+	sqlite3 ./internal/db/comfychan.db < ./internal/db/seed.sql
+
+db/seed/f:
+	rm ./internal/db/comfychan.db && sqlite3 ./internal/db/comfychan.db < ./internal/db/seed.sql
+
