@@ -3,9 +3,13 @@ package boards
 import "github.com/dominicf2001/comfychan/web/views/shared"
 
 templ Comfy() {
-@shared.Layout() {
-<section style="margin-top: 100px;">
-	<div>Comfy</div>
-</section>
-}
+	@shared.Layout() {
+		<header class="board-header">
+			<img src="/static/img/banner-comfy.png"/>
+			<h1>
+				"/comfy/" - Comfy
+			</h1>
+			<p>Be comfy fren</p>
+		</header>
+	}
 }

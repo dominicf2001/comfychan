@@ -2,12 +2,17 @@ body {
     background: #EEF2FF;
 }
 
+/* INDEX */
+
 #clavis {
     display: block;
     width: 300px;
     margin: 10px auto;
     margin-bottom: 50px;
 }
+
+
+/* BOARD LIST */
 
 #boardList {
     font-size: 12px;
@@ -21,6 +26,29 @@ body {
 #boardList a:hover {
     color: #ff0000;
 }
+
+/* BOARDS */
+
+.board-header {
+    text-align: center;
+    color: #AF0A0F;
+}
+
+.board-header h1 {
+    padding: 0;
+    margin: 0;
+}
+
+.board-header p {
+    font-size: 12px;
+    margin: 5px;
+}
+
+.board-header img {
+    width: 300px;
+}
+
+/* GENERAL LAYOUT */
 
 .container {
     width: 600px;
