@@ -16,6 +16,7 @@ body {
 
 #boardList {
     font-size: 12px;
+    margin: 5px;
 }
 
 #boardList a {
@@ -35,17 +36,36 @@ body {
 }
 
 .board-header h1 {
-    padding: 0;
-    margin: 0;
+    font-weight: bold;
+    font-size: 1.8rem;
+    margin: 8px;
+    margin-top: 12px;
 }
 
 .board-header p {
-    font-size: 12px;
-    margin: 5px;
+    font-size: .8rem;
+    margin: 4px;
 }
 
 .board-header img {
     width: 300px;
+}
+
+.new-thread-btn {
+    display: block;
+    margin: auto;
+    margin-top: 12px;
+    background: none;
+    border: none;
+    padding: 0;
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #34345C;
+    cursor: pointer;
+}
+
+.new-thread-btn:hover {
+    color: #ff0000
 }
 
 /* GENERAL LAYOUT */

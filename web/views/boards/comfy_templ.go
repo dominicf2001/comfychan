@@ -43,7 +43,7 @@ func Comfy() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<header class=\"board-header\"><img src=\"/static/img/banner-comfy.png\"><h1>\"/comfy/\" - Comfy</h1><p>Be comfy fren</p></header>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<header class=\"board-header\"><img src=\"/static/img/banner-comfy.png\"><h1>\"/comfy/\" - Comfy</h1><p>Be comfy fren</p></header><button class=\"new-thread-btn\">[New Thread]</button>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
