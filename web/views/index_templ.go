@@ -43,7 +43,7 @@ func Index() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section style=\"margin-top: 100px;\"><div>Index</div></section>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section class=\"container\"><img id=\"clavis\" src=\"/static/img/clavis.png\"><div class=\"box\"><h2>Welcome to Comfychan</h2><div><p><strong>Comfychan</strong> is place to share comfy images and videos.</p></div></div></section>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
