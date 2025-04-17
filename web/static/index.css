@@ -1,0 +1,16 @@
+body {
+    background: #EEF2FF;
+}
+
+#boardList {
+    font-size: 12px;
+}
+
+#boardList a {
+    cursor: pointer;
+    color: #575F68;
+}
+
+#boardList a:hover {
+    color: #ff0000;
+}

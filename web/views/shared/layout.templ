@@ -1,0 +1,32 @@
+package shared
+
+templ Layout() {
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<title>Comfychan</title>
+	<link rel="stylesheet" href="/static/index.css" />
+</head>
+
+<body>
+	<div id="boardList">
+		<span>
+			[
+			<a href="/">index</a>
+			]
+		</span>
+		<span>
+			[
+			<a href="/comfy">comfy</a>
+			/
+			<a>r9k</a>
+			]
+		</span>
+	</div>
+	{ children... }
+</body>
+
+</html>
+}
