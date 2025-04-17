@@ -1,11 +1,13 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
-	"net/http"
-
+	"github.com/dominicf2001/comfychan/internal/database"
 	"github.com/dominicf2001/comfychan/web/views"
-	"github.com/dominicf2001/comfychan/web/views/boards"
+	_ "github.com/mattn/go-sqlite3"
+	"log"
+	"net/http"
 )
 
 var dev = true
@@ -21,6 +23,12 @@ func disableCacheInDevMode(next http.Handler) http.Handler {
 }
 
 func main() {
+	db, err := sql.Open("sqlite3", "internal/database/comfychan.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
 	http.Handle("/static/",
 		disableCacheInDevMode(
 			http.StripPrefix("/static",
@@ -31,7 +39,14 @@ func main() {
 	})
 
 	http.HandleFunc("/comfy", func(w http.ResponseWriter, r *http.Request) {
-		boards.Comfy().Render(r.Context(), w)
+		board, err := database.GetBoard(db, "comfy")
+		if err != nil {
+			http.Error(w, "Failed to load boards", http.StatusInternalServerError)
+			log.Printf("Error fetching boards: %v", err)
+			return
+		}
+
+		views.Board(board).Render(r.Context(), w)
 	})
 
 	fmt.Println("Listening on :8080")

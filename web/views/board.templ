@@ -1,6 +1,10 @@
-package boards
+package views
 
-import "github.com/dominicf2001/comfychan/web/views/shared"
+import (
+	"fmt"
+	database "github.com/dominicf2001/comfychan/internal/database"
+	"github.com/dominicf2001/comfychan/web/views/shared"
+)
 
 templ NewThreadForm() {
 	<form style="display: none;" id="newThreadForm" style="display: ;">
@@ -21,14 +25,14 @@ templ NewThreadForm() {
 	</form>
 }
 
-templ Comfy() {
+templ Board(board database.Board) {
 	@shared.Layout() {
 		<header class="board-header">
 			<img src="/static/img/banner-comfy.png"/>
 			<h1>
-				"/comfy/" - Comfy
+				{ fmt.Sprintf("/%s/ - %s", board.Slug, board.Name) }
 			</h1>
-			<p>Be comfy fren</p>
+			<p>{ board.Tag }</p>
 		</header>
 		<div class="new-thread-container">
 			<button _="on click hide me then show #newThreadForm" id="newThreadBtn">[New Thread]</button>

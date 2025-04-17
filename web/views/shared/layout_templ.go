@@ -29,7 +29,7 @@ func Layout() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><title>Comfychan</title><script src=\"https://unpkg.com/hyperscript.org@0.9.14\"></script><link rel=\"stylesheet\" href=\"/static/reset.css\"><link rel=\"stylesheet\" href=\"/static/index.css\"></head><body><div id=\"boardList\"><span>[ <a href=\"/\">index</a> ]</span> <span>[ <a href=\"/comfy\">comfy</a> / <a href=\"#\">r9k</a> ]</span></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><title>Comfychan</title><script src=\"https://unpkg.com/hyperscript.org@0.9.14\"></script><link rel=\"stylesheet\" href=\"/static/reset.css\"><link rel=\"stylesheet\" href=\"/static/index.css\"></head><body><div id=\"boardList\"><span>[ <a href=\"/\">index</a> ]</span> <span>[ <a href=\"/comfy\">comfy</a> / <a href=\"/r9k\">r9k</a> ]</span></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
