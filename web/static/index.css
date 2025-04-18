@@ -54,21 +54,26 @@ body {
 .new-thread-container {
     width: max-content;
     margin: auto;
+    margin-top: 16px;
 }
 
-#threadCatalog {
-    margin: 0 2rem;
+#catalog {
+    display: grid;
+    grid-template-columns: auto auto auto auto;
+    gap: 1rem;
+    margin: 2rem;
 }
 
 .thread-catalog-post {
     padding: 10px;
     border: 2px solid rgba(111, 111, 111, 0.34);
     min-width: 140px;
-    max-width: 140px;
+    max-width: 200px;
     max-height: 192px;
 }
 
 .thread-catalog-post h1 {
+    font-size: 14px;
     color: #0F0C5D;
     font-weight: bold;
 }
@@ -91,6 +96,11 @@ body {
 
 #newThreadBtn:hover {
     color: #ff0000
+}
+
+#newThreadForm button {
+    display: block;
+    margin-left: auto;
 }
 
 .new-thread-form-field {}

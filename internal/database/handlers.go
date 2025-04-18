@@ -73,3 +73,32 @@ func GetThreadPosts(db *sql.DB, thread_id int) ([]Post, error) {
 
 	return result, rows.Err()
 }
+
+func PutBoardThread(db *sql.DB, boardId int, subject string, body string) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	res, err := tx.Exec(`INSERT INTO threads (board_id, subject) VALUES (?, ?) RETURNING id`, boardId, subject)
+	if err != nil {
+		return err
+	}
+
+	threadId, err := res.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(`INSERT INTO posts (thread_id, body) VALUES (?, ?)`, threadId, body)
+	if err != nil {
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}

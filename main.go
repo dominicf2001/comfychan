@@ -3,15 +3,14 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"log"
-	"net/http"
-	"strconv"
-
 	"github.com/dominicf2001/comfychan/internal/database"
 	"github.com/dominicf2001/comfychan/web/views"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/mattn/go-sqlite3"
+	"log"
+	"net/http"
+	"strconv"
 )
 
 var dev = true
@@ -59,7 +58,7 @@ func main() {
 		views.Board(board).Render(r.Context(), w)
 	})
 
-	r.Get("/hx/{boardId}/posts/grid", func(w http.ResponseWriter, r *http.Request) {
+	r.Get("/hx/boards/{boardId}/catalog", func(w http.ResponseWriter, r *http.Request) {
 		boardIdStr := chi.URLParam(r, "boardId")
 		boardId, err := strconv.Atoi(boardIdStr)
 		if err != nil {
@@ -89,7 +88,26 @@ func main() {
 			})
 		}
 
-		views.PostsGrid(vms).Render(r.Context(), w)
+		views.PostsCatalog(vms).Render(r.Context(), w)
+	})
+
+	r.Post("/boards/{boardId}/threads", func(w http.ResponseWriter, r *http.Request) {
+		boardIdStr := chi.URLParam(r, "boardId")
+		boardId, err := strconv.Atoi(boardIdStr)
+		if err != nil {
+			http.Error(w, "invalid board id", http.StatusBadRequest)
+			return
+		}
+
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, "Bad form data", http.StatusBadRequest)
+			return
+		}
+
+		subject := r.FormValue("subject")
+		body := r.FormValue("body")
+
+		database.PutBoardThread(db, boardId, subject, body)
 	})
 
 	fmt.Println("Listening on :8080")
