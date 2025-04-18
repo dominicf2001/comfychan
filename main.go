@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/dominicf2001/comfychan/internal/database"
 	"github.com/dominicf2001/comfychan/web/views"
@@ -51,11 +52,44 @@ func main() {
 		board, err := database.GetBoard(db, slug)
 		if err != nil {
 			http.NotFound(w, r)
-			log.Printf("board %q not found: %v", slug, err)
+			log.Printf("Board %q not found: %v", slug, err)
 			return
 		}
 
 		views.Board(board).Render(r.Context(), w)
+	})
+
+	r.Get("/hx/{boardId}/posts/grid", func(w http.ResponseWriter, r *http.Request) {
+		boardIdStr := chi.URLParam(r, "boardId")
+		boardId, err := strconv.Atoi(boardIdStr)
+		if err != nil {
+			http.Error(w, "invalid board id", http.StatusBadRequest)
+			return
+		}
+
+		threads, err := database.GetBoardThreads(db, boardId)
+		if err != nil {
+			http.Error(w, "Failed to get board threads", http.StatusInternalServerError)
+			log.Printf("GetBoardThreads: %v", err)
+			return
+		}
+
+		vms := make([]views.ThreadGridBoxViewModel, 0, len(threads))
+		for _, thread := range threads {
+			posts, err := database.GetThreadPosts(db, thread.Id)
+			if err != nil {
+				http.Error(w, "Error getting thread posts", http.StatusBadRequest)
+				log.Printf("GetThreadPosts: %v", err)
+				return
+			}
+
+			vms = append(vms, views.ThreadGridBoxViewModel{
+				Thread: thread,
+				Posts:  posts,
+			})
+		}
+
+		views.PostsGrid(vms).Render(r.Context(), w)
 	})
 
 	fmt.Println("Listening on :8080")

@@ -1,42 +1,43 @@
 package views
 
 import (
-	"fmt"
-	database "github.com/dominicf2001/comfychan/internal/database"
-	"github.com/dominicf2001/comfychan/web/views/shared"
+"fmt"
+database "github.com/dominicf2001/comfychan/internal/database"
+"github.com/dominicf2001/comfychan/web/views/shared"
 )
 
 templ NewThreadForm() {
-	<form style="display: none;" id="newThreadForm" style="display: ;">
-		<div>
-			<table>
-				<tbody>
-					<tr class="new-thread-form-field">
-						<th>Subject</th>
-						<td><input/></td>
-					</tr>
-					<tr class="new-thread-form-field">
-						<th>Comment</th>
-						<td><textarea></textarea></td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
-	</form>
+<form style="display: none;" id="newThreadForm" style="display: ;">
+	<div>
+		<table>
+			<tbody>
+				<tr class="new-thread-form-field">
+					<th>Subject</th>
+					<td><input /></td>
+				</tr>
+				<tr class="new-thread-form-field">
+					<th>Comment</th>
+					<td><textarea></textarea></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</form>
 }
 
 templ Board(board database.Board) {
-	@shared.Layout() {
-		<header class="board-header">
-			<img src="/static/img/banner-comfy.png"/>
-			<h1>
-				{ fmt.Sprintf("/%s/ - %s", board.Slug, board.Name) }
-			</h1>
-			<p>{ board.Tag }</p>
-		</header>
-		<div class="new-thread-container">
-			<button _="on click hide me then show #newThreadForm" id="newThreadBtn">[New Thread]</button>
-			@NewThreadForm()
-		</div>
-	}
+@shared.Layout() {
+<header class="board-header">
+	<img src="/static/img/banner-comfy.png" />
+	<h1>
+		{ fmt.Sprintf("/%s/ - %s", board.Slug, board.Name) }
+	</h1>
+	<p>{ board.Tag }</p>
+</header>
+<div class="new-thread-container">
+	<button _="on click hide me then show #newThreadForm" id="newThreadBtn">[New Thread]</button>
+	@NewThreadForm()
+</div>
+<div hx-get={ fmt.Sprintf("/hx/%d/posts/grid", board.Id) } hx-trigger="load" id="threadCatalog"></div>
+}
 }

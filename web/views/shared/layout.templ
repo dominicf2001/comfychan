@@ -1,33 +1,31 @@
 package shared
 
 templ Layout() {
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-	<meta charset="UTF-8" />
-	<title>Comfychan</title>
-	<script src="https://unpkg.com/hyperscript.org@0.9.14"></script>
-	<link rel="stylesheet" href="/static/reset.css" />
-	<link rel="stylesheet" href="/static/index.css" />
-</head>
-
-<body>
-	<div id="boardList">
-		<span>
-			[
-			<a href="/">index</a>
-			]
-		</span>
-		<span>
-			[
-			<a href="/comfy">comfy</a> /
-			<a href="/g">g</a>
-			]
-		</span>
-	</div>
-	{ children... }
-</body>
-
-</html>
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<title>Comfychan</title>
+			<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+			<script src="https://unpkg.com/hyperscript.org@0.9.14"></script>
+			<link rel="stylesheet" href="/static/reset.css"/>
+			<link rel="stylesheet" href="/static/index.css"/>
+		</head>
+		<body>
+			<div id="boardList">
+				<span>
+					[
+					<a href="/">index</a>
+					]
+				</span>
+				<span>
+					[
+					<a href="/comfy">comfy</a> /
+					<a href="/g">g</a>
+					]
+				</span>
+			</div>
+			{ children... }
+		</body>
+	</html>
 }

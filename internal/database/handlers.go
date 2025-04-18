@@ -32,3 +32,44 @@ func GetBoard(db *sql.DB, slug string) (Board, error) {
 
 	return result, row.Err()
 }
+
+func GetBoardThreads(db *sql.DB, board_id int) ([]Thread, error) {
+	rows, err := db.Query(
+		`SELECT id, board_id, subject, created_at, bumped_at FROM threads WHERE board_id = ?`, board_id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var result []Thread
+	for rows.Next() {
+		var t Thread
+		err := rows.Scan(&t.Id, &t.BoardId, &t.Subject, &t.CreatedAt, &t.BumpedAt)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, rows.Err()
+}
+
+func GetThreadPosts(db *sql.DB, thread_id int) ([]Post, error) {
+	rows, err := db.Query(`SELECT id, thread_id, author, body, created_at FROM posts where thread_id = ?`, thread_id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var result []Post
+	for rows.Next() {
+		var p Post
+		err := rows.Scan(&p.Id, &p.ThreadId, &p.Author, &p.Body, &p.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, p)
+	}
+
+	return result, rows.Err()
+}
