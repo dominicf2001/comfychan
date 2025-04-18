@@ -10,7 +10,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 var dev = true
@@ -58,15 +57,24 @@ func main() {
 		views.Board(board).Render(r.Context(), w)
 	})
 
-	r.Get("/hx/boards/{boardId}/catalog", func(w http.ResponseWriter, r *http.Request) {
-		boardIdStr := chi.URLParam(r, "boardId")
-		boardId, err := strconv.Atoi(boardIdStr)
-		if err != nil {
-			http.Error(w, "invalid board id", http.StatusBadRequest)
-			return
-		}
+	// r.Get("/{slug}/{threadId}/posts", func(w http.ResponseWriter, r *http.Request) {
+	// 	slug := chi.URLParam(r, "slug")
+	// 	threadIdStr := chi.URLParam(r, "postId")
+	// 	threadId, err := strconv.Atoi(threadIdStr)
+	// 	if err != nil {
+	// 		http.Error(w, "Invalid thread id", http.StatusBadRequest)
+	// 		return
+	// 	}
+	//
+	// 	posts, err := database.GetThreadPosts(db, threadId)
+	// 	if err != nil {
+	// 		http.Error(w, "Failed to get thread posts", http.StatusInternalServerError)
+	// 	}
+	// })
 
-		threads, err := database.GetBoardThreads(db, boardId)
+	r.Get("/hx/{slug}/catalog", func(w http.ResponseWriter, r *http.Request) {
+		slug := chi.URLParam(r, "slug")
+		threads, err := database.GetBoardThreads(db, slug)
 		if err != nil {
 			http.Error(w, "Failed to get board threads", http.StatusInternalServerError)
 			log.Printf("GetBoardThreads: %v", err)
@@ -91,13 +99,8 @@ func main() {
 		views.PostsCatalog(vms).Render(r.Context(), w)
 	})
 
-	r.Post("/boards/{boardId}/threads", func(w http.ResponseWriter, r *http.Request) {
-		boardIdStr := chi.URLParam(r, "boardId")
-		boardId, err := strconv.Atoi(boardIdStr)
-		if err != nil {
-			http.Error(w, "invalid board id", http.StatusBadRequest)
-			return
-		}
+	r.Post("/{slug}/threads", func(w http.ResponseWriter, r *http.Request) {
+		slug := chi.URLParam(r, "slug")
 
 		if err := r.ParseForm(); err != nil {
 			http.Error(w, "Bad form data", http.StatusBadRequest)
@@ -107,7 +110,7 @@ func main() {
 		subject := r.FormValue("subject")
 		body := r.FormValue("body")
 
-		database.PutBoardThread(db, boardId, subject, body)
+		database.PutBoardThread(db, slug, subject, body)
 	})
 
 	fmt.Println("Listening on :8080")

@@ -33,9 +33,9 @@ func GetBoard(db *sql.DB, slug string) (Board, error) {
 	return result, row.Err()
 }
 
-func GetBoardThreads(db *sql.DB, board_id int) ([]Thread, error) {
+func GetBoardThreads(db *sql.DB, slug string) ([]Thread, error) {
 	rows, err := db.Query(
-		`SELECT id, board_id, subject, created_at, bumped_at FROM threads WHERE board_id = ?`, board_id)
+		`SELECT id, board_slug, subject, created_at, bumped_at FROM threads WHERE board_slug = ?`, slug)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func GetBoardThreads(db *sql.DB, board_id int) ([]Thread, error) {
 	var result []Thread
 	for rows.Next() {
 		var t Thread
-		err := rows.Scan(&t.Id, &t.BoardId, &t.Subject, &t.CreatedAt, &t.BumpedAt)
+		err := rows.Scan(&t.Id, &t.BoardSlug, &t.Subject, &t.CreatedAt, &t.BumpedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -74,14 +74,14 @@ func GetThreadPosts(db *sql.DB, thread_id int) ([]Post, error) {
 	return result, rows.Err()
 }
 
-func PutBoardThread(db *sql.DB, boardId int, subject string, body string) error {
+func PutBoardThread(db *sql.DB, board_slug string, subject string, body string) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
 
-	res, err := tx.Exec(`INSERT INTO threads (board_id, subject) VALUES (?, ?) RETURNING id`, boardId, subject)
+	res, err := tx.Exec(`INSERT INTO threads (board_slug, subject) VALUES (?, ?) RETURNING id`, board_slug, subject)
 	if err != nil {
 		return err
 	}

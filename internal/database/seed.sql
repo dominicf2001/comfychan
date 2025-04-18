@@ -13,11 +13,11 @@ CREATE TABLE IF NOT EXISTS boards (
 
 CREATE TABLE IF NOT EXISTS threads ( 
     id INTEGER PRIMARY KEY AUTOINCREMENT, 
-    board_id INTEGER NOT NULL,
+    board_slug TEXT NOT NULL,
     subject TEXT NOT NULL DEFAULT '',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     bumped_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (board_id) REFERENCES boards(id) ON DELETE CASCADE
+    FOREIGN KEY (board_slug) REFERENCES boards(slug) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS posts (
@@ -42,8 +42,8 @@ INSERT INTO boards (slug, name, tag) VALUES
 -- Welcome threads
 
   -- /comfy/
-    INSERT INTO threads (board_id, subject) VALUES ( 
-        (SELECT id FROM boards WHERE slug='comfy'),
+    INSERT INTO threads (board_slug, subject) VALUES ( 
+        'comfy',
         'Welcome to /comfy/.' 
     );
     INSERT INTO posts (thread_id, body) VALUES (

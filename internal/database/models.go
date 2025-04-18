@@ -11,7 +11,7 @@ type Board struct {
 
 type Thread struct {
 	Id        int
-	BoardId   int
+	BoardSlug string
 	Subject   string
 	CreatedAt time.Time
 	BumpedAt  time.Time
