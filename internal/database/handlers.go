@@ -89,7 +89,7 @@ func GetThreadPosts(db *sql.DB, threadId int) ([]Post, error) {
 	return result, rows.Err()
 }
 
-func PutBoardThread(db *sql.DB, boardSlug string, subject string, body string) error {
+func PutThread(db *sql.DB, boardSlug string, subject string, body string) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return err
@@ -112,6 +112,15 @@ func PutBoardThread(db *sql.DB, boardSlug string, subject string, body string) e
 	}
 
 	if err = tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func PutPost(db *sql.DB, threadId int, body string) error {
+	_, err := db.Exec(`INSERT INTO posts (thread_id, body) VALUES (?, ?)`, threadId, body)
+	if err != nil {
 		return err
 	}
 

@@ -11,7 +11,6 @@ body {
     margin-bottom: 50px;
 }
 
-
 /* BOARD LIST */
 
 #boardList {
@@ -28,7 +27,7 @@ body {
     color: #ff0000;
 }
 
-/* BOARDS */
+/* BOARD */
 
 .board-header {
     text-align: center;
@@ -51,11 +50,7 @@ body {
     width: 300px;
 }
 
-.new-thread-container {
-    width: max-content;
-    margin: auto;
-    margin-top: 16px;
-}
+/* THREAD CATALOG */
 
 #catalog {
     display: grid;
@@ -87,6 +82,9 @@ body {
     cursor: pointer;
 }
 
+
+/* NEW THREAD BUTTON/FORM */
+
 #newThreadBtn {
     margin-top: 12px;
     background: none;
@@ -102,9 +100,16 @@ body {
     color: #ff0000
 }
 
+#newPostForm button,
 #newThreadForm button {
     display: block;
     margin-left: auto;
+}
+
+.new-thread-container {
+    width: max-content;
+    margin: auto;
+    margin-top: 16px;
 }
 
 .new-thread-form-field th {
@@ -120,6 +125,43 @@ body {
 .new-thread-form-field td {
     display: block;
     margin: 2px;
+}
+
+
+/* THREAD/POSTS */
+
+.thread {
+    margin: 2rem;
+}
+
+.thread-subject {
+    font-weight: bold;
+    color: #b294bb;
+    margin-right: 5px;
+}
+
+.post-header {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.post-header span {
+    margin-right: 5px;
+}
+
+.post-author {
+    color: #13A82A;
+}
+
+.op-post {
+    margin-bottom: 10px;
+}
+
+.post {
+    padding: 10px;
+    background-color: #D6DAF0;
+    border: 1px solid #282a2e;
+    margin-bottom: 10px;
 }
 
 /* GENERAL LAYOUT */

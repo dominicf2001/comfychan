@@ -1,12 +1,54 @@
 package views
 
 import (
+"fmt"
 "github.com/dominicf2001/comfychan/internal/database"
 "github.com/dominicf2001/comfychan/web/views/shared"
+"strconv"
 )
 
 templ Thread(board database.Board, thread database.Thread, posts []database.Post) {
 @shared.Layout() {
 @BoardHeader(board)
+<div class="new-thread-container">
+	<form id="newPostForm" hx-swap="none" hx-post={ fmt.Sprintf("/%s/threads/%d", board.Slug, thread.Id) }>
+		<table>
+			<tbody>
+				<tr class="new-thread-form-field">
+					<th>Comment</th>
+					<td><textarea name="body" required></textarea></td>
+				</tr>
+			</tbody>
+		</table>
+		<button type="submit">Submit</button>
+	</form>
+</div>
+<div class="thread">
+	<article class="op-post">
+		<header class="post-header">
+			<h1 class="thread-subject">{ thread.Subject } -</h1>
+			<span class="post-author">{ posts[0].Author }</span>
+			<span class="post-date">{ posts[0].CreatedAt.Format("01/02/2006") }</span>
+			<span class="post-time">{ posts[0].CreatedAt.Format("15:04") }</span>
+			<span class="post-num">No. { strconv.Itoa(posts[0].Id) }</span>
+		</header>
+		<section>
+			<p>{ posts[0].Body }</p>
+		</section>
+	</article>
+	for _, post := range (posts[1:]) {
+	<article class="post">
+		<header class="post-header">
+			<span class="post-author">{ post.Author }</span>
+			<span class="post-date">{ post.CreatedAt.Format("01/02/2006") }</span>
+			<span class="post-time">{ post.CreatedAt.Format("15:04") }</span>
+			<span class="post-num">No. { strconv.Itoa(post.Id) }</span>
+		</header>
+		<section>
+			<p>{ post.Body }</p>
+		</section>
+	</article>
+	}
+</div>
 }
 }

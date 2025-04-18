@@ -50,3 +50,7 @@ INSERT INTO boards (slug, name, tag) VALUES
         (SELECT id FROM threads WHERE subject LIKE 'Welcome to /comfy/.%'),
         'Post comfy. Be nice.'
     );
+    INSERT INTO posts (thread_id, body) VALUES (
+        (SELECT id FROM threads WHERE subject LIKE 'Welcome to /comfy/.%'),
+        'Henlo fren.'
+    );

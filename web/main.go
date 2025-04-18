@@ -100,7 +100,38 @@ func main() {
 			return
 		}
 
+		if len(posts) == 0 {
+			http.Error(w, "Malformed thread", http.StatusInternalServerError)
+			log.Printf("Thread %d has no posts", thread.Id)
+			return
+		}
+
 		views.Thread(board, thread, posts).Render(r.Context(), w)
+	})
+
+	r.Post("/{slug}/threads/{threadId}", func(w http.ResponseWriter, r *http.Request) {
+		// slug := chi.URLParam(r, "slug")
+		// TODO: use relative thread_nums (see issue #1)
+		threadIdStr := chi.URLParam(r, "threadId")
+		threadId, err := strconv.Atoi(threadIdStr)
+		if err != nil {
+			http.Error(w, "Invalid thread id", http.StatusBadRequest)
+			return
+		}
+
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, "Bad form data", http.StatusBadRequest)
+			log.Printf("ParseForm: %v", err)
+			return
+		}
+
+		body := r.FormValue("body")
+
+		if err := database.PutPost(db, threadId, body); err != nil {
+			http.Error(w, "Failed to create post", http.StatusInternalServerError)
+			log.Printf("PutPost: %v", err)
+			return
+		}
 	})
 
 	r.Post("/{slug}/threads", func(w http.ResponseWriter, r *http.Request) {
@@ -108,13 +139,18 @@ func main() {
 
 		if err := r.ParseForm(); err != nil {
 			http.Error(w, "Bad form data", http.StatusBadRequest)
+			log.Printf("ParseForm: %v", err)
 			return
 		}
 
 		subject := r.FormValue("subject")
 		body := r.FormValue("body")
 
-		database.PutBoardThread(db, slug, subject, body)
+		if err := database.PutThread(db, slug, subject, body); err != nil {
+			http.Error(w, "Failed to create thread", http.StatusInternalServerError)
+			log.Printf("PutThread: %v", err)
+			return
+		}
 	})
 
 	// -----------------
@@ -143,7 +179,7 @@ func main() {
 
 			if len(posts) == 0 {
 				http.Error(w, "Malformed thread", http.StatusInternalServerError)
-				log.Printf("GetThreadPosts: %v", err)
+				log.Printf("Thread %d has no posts", thread.Id)
 				return
 			}
 
