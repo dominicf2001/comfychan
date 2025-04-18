@@ -1,0 +1,18 @@
+package views
+
+type CatalogThreadPreview struct {
+Subject string
+Body string
+ThreadURL string
+}
+
+templ ThreadsCatalog(previews []CatalogThreadPreview) {
+<div id="catalog">
+	for _, preview := range previews {
+	<div class="catalog-post">
+		<h1><a href={ templ.SafeURL(preview.ThreadURL) } class="catalog-post-link">{ preview.Subject }</a></h1>
+		<p>{ preview.Body }</p>
+	</div>
+	}
+</div>
+}
