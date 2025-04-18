@@ -23,4 +23,5 @@ type Post struct {
 	Author    string
 	Body      string
 	CreatedAt time.Time
+	MediaPath string
 }

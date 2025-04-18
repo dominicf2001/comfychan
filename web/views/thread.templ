@@ -20,6 +20,7 @@ for _, post := range (posts) {
 		<p>{ post.Body }</p>
 	</section>
 </article>
+<br />
 }
 }
 
@@ -33,7 +34,7 @@ templ Thread(board database.Board, thread database.Thread, posts []database.Post
 		<table>
 			<tbody>
 				<tr class="new-post-form-field">
-					<th>Comment</th>
+					<th>comment</th>
 					<td><textarea id="newPostBody" name="body" required></textarea></td>
 				</tr>
 			</tbody>
@@ -43,6 +44,11 @@ templ Thread(board database.Board, thread database.Thread, posts []database.Post
 </div>
 <div class="thread">
 	<article class="op-post">
+		if posts[0].MediaPath != "" {
+		<div class="post-img-container">
+			<img src={ fmt.Sprintf("/static/img/posts/%s", posts[0].MediaPath) } class="post-img" />
+		</div>
+		}
 		<header class="post-header">
 			<h1 class="thread-subject">{ thread.Subject } -</h1>
 			<span class="post-author">{ posts[0].Author }</span>
@@ -50,9 +56,7 @@ templ Thread(board database.Board, thread database.Thread, posts []database.Post
 			<span class="post-time">{ posts[0].CreatedAt.Format("15:04") }</span>
 			<span class="post-num">No. { strconv.Itoa(posts[0].Id) }</span>
 		</header>
-		<section>
-			<p>{ posts[0].Body }</p>
-		</section>
+		<p class="post-body">{ posts[0].Body }</p>
 	</article>
 	<div hx-get={ fmt.Sprintf("/hx/%s/threads/%d/posts", board.Slug, thread.Id) }
 		hx-trigger="load, refreshPosts from:body"></div>

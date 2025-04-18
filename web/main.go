@@ -102,9 +102,9 @@ func main() {
 			return
 		}
 
-		if len(posts) == 0 {
+		if len(posts) == 0 || posts[0].MediaPath == "" {
 			http.Error(w, "Malformed thread", http.StatusInternalServerError)
-			log.Printf("Thread %d has no posts", thread.Id)
+			log.Printf("Thread %d has no posts or no OP image", threadId)
 			return
 		}
 
@@ -182,9 +182,9 @@ func main() {
 				return
 			}
 
-			if len(posts) == 0 {
+			if len(posts) == 0 || posts[0].MediaPath == "" {
 				http.Error(w, "Malformed thread", http.StatusInternalServerError)
-				log.Printf("Thread %d has no posts", thread.Id)
+				log.Printf("Thread %d has no posts or no OP image", thread.Id)
 				return
 			}
 
@@ -192,6 +192,7 @@ func main() {
 				Subject:   thread.Subject,
 				Body:      posts[0].Body,
 				ThreadURL: fmt.Sprintf("/%s/threads/%d", slug, thread.Id),
+				MediaPath: posts[0].MediaPath,
 			})
 		}
 
@@ -216,9 +217,9 @@ func main() {
 			return
 		}
 
-		if len(posts) == 0 {
+		if len(posts) == 0 || posts[0].MediaPath == "" {
 			http.Error(w, "Malformed thread", http.StatusInternalServerError)
-			log.Printf("Thread %d has no posts", threadId)
+			log.Printf("Thread %d has no posts or no OP image", threadId)
 			return
 		}
 

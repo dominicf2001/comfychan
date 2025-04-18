@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS posts (
     author TEXT DEFAULT 'Anonymous',
     body TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    media_path TEXT NOT NULL DEFAULT '',
     FOREIGN KEY (thread_id) REFERENCES threads(id) ON DELETE CASCADE
 );
 
@@ -46,11 +47,8 @@ INSERT INTO boards (slug, name, tag) VALUES
         'comfy',
         'Welcome to /comfy/.' 
     );
-    INSERT INTO posts (thread_id, body) VALUES (
+    INSERT INTO posts (thread_id, body, media_path) VALUES (
         (SELECT id FROM threads WHERE subject LIKE 'Welcome to /comfy/.%'),
-        'Post comfy. Be nice.'
-    );
-    INSERT INTO posts (thread_id, body) VALUES (
-        (SELECT id FROM threads WHERE subject LIKE 'Welcome to /comfy/.%'),
-        'Henlo fren.'
+        'Post comfy. Be nice.',
+        '1.jpg'
     );

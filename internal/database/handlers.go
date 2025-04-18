@@ -70,7 +70,7 @@ func GetThread(db *sql.DB, threadId int) (Thread, error) {
 }
 
 func GetPosts(db *sql.DB, threadId int) ([]Post, error) {
-	rows, err := db.Query(`SELECT id, thread_id, author, body, created_at FROM posts where thread_id = ?`, threadId)
+	rows, err := db.Query(`SELECT id, thread_id, author, body, created_at, media_path FROM posts where thread_id = ?`, threadId)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func GetPosts(db *sql.DB, threadId int) ([]Post, error) {
 	var result []Post
 	for rows.Next() {
 		var p Post
-		err := rows.Scan(&p.Id, &p.ThreadId, &p.Author, &p.Body, &p.CreatedAt)
+		err := rows.Scan(&p.Id, &p.ThreadId, &p.Author, &p.Body, &p.CreatedAt, &p.MediaPath)
 		if err != nil {
 			return nil, err
 		}
@@ -106,7 +106,7 @@ func PutThread(db *sql.DB, boardSlug string, subject string, body string) error 
 		return err
 	}
 
-	_, err = tx.Exec(`INSERT INTO posts (thread_id, body) VALUES (?, ?)`, threadId, body)
+	_, err = tx.Exec(`INSERT INTO posts (thread_id, body, media_path) VALUES (?, ?, ?)`, threadId, body, "default.png")
 	if err != nil {
 		return err
 	}
