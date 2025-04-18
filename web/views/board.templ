@@ -29,7 +29,7 @@ templ NewThreadForm(board database.Board) {
 
 templ BoardHeader(board database.Board) {
 <header class="board-header">
-	<img src="/static/img/banner-comfy.png" />
+	<img src={ fmt.Sprintf("/static/img/banners/%s.png", board.Slug) } />
 	<h1>
 		{ fmt.Sprintf("/%s/ - %s", board.Slug, board.Name) }
 	</h1>
