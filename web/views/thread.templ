@@ -3,6 +3,7 @@ package views
 import (
 	"fmt"
 	"github.com/dominicf2001/comfychan/internal/database"
+	"github.com/dominicf2001/comfychan/internal/util"
 	"github.com/dominicf2001/comfychan/web/views/shared"
 	"strconv"
 )
@@ -21,7 +22,9 @@ templ ThreadPosts(posts []database.Post) {
 				<span class="post-time">{ post.CreatedAt.Format("15:04") }</span>
 				<span class="post-num">No. { strconv.Itoa(post.Id) }</span>
 			</header>
-			<p>{ post.Body }</p>
+			<p>
+				@templ.Raw(util.EnrichPost(post.Body))
+			</p>
 		</article>
 		<br/>
 	}
@@ -71,7 +74,9 @@ templ Thread(board database.Board, thread database.Thread, posts []database.Post
 					<span class="post-time">{ posts[0].CreatedAt.Format("15:04") }</span>
 					<span class="post-num">No. { strconv.Itoa(posts[0].Id) }</span>
 				</header>
-				<p class="post-body">{ posts[0].Body }</p>
+				<p class="post-body">
+					@templ.Raw(util.EnrichPost(posts[0].Body))
+				</p>
 			</article>
 			<div hx-get={ fmt.Sprintf("/hx/%s/threads/%d/posts", board.Slug, thread.Id) } hx-trigger="refreshPosts from:body">
 				@ThreadPosts(posts[1:])

@@ -1,6 +1,7 @@
 package views
 
 import "fmt"
+import "github.com/dominicf2001/comfychan/internal/util"
 
 type CatalogThreadPreview struct {
 	Subject   string
@@ -17,7 +18,9 @@ templ ThreadsCatalog(previews []CatalogThreadPreview) {
 					<img class="catalog-preview-img" src={ fmt.Sprintf("/static/img/posts/%s", preview.MediaPath) }/>
 				</a>
 				<h1><a href={ templ.SafeURL(preview.ThreadURL) } class="catalog-preview-link">{ preview.Subject }</a></h1>
-				<p>{ preview.Body }</p>
+				<p>
+					@templ.Raw(util.EnrichPost(preview.Body))
+				</p>
 			</div>
 		}
 	</div>
