@@ -118,8 +118,8 @@ func PutThread(db *sql.DB, boardSlug string, subject string, body string, mediaP
 	return nil
 }
 
-func PutPost(db *sql.DB, threadId int, body string) error {
-	_, err := db.Exec(`INSERT INTO posts (thread_id, body) VALUES (?, ?)`, threadId, body)
+func PutPost(db *sql.DB, threadId int, body string, mediaPath string) error {
+	_, err := db.Exec(`INSERT INTO posts (thread_id, body, media_path) VALUES (?, ?, ?)`, threadId, body, mediaPath)
 	if err != nil {
 		return err
 	}

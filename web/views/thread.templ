@@ -1,65 +1,81 @@
 package views
 
 import (
-"fmt"
-"github.com/dominicf2001/comfychan/internal/database"
-"github.com/dominicf2001/comfychan/web/views/shared"
-"strconv"
+	"fmt"
+	"github.com/dominicf2001/comfychan/internal/database"
+	"github.com/dominicf2001/comfychan/web/views/shared"
+	"strconv"
 )
 
 templ ThreadPosts(posts []database.Post) {
-for _, post := range (posts) {
-<article class="post">
-	<header class="post-header">
-		<span class="post-author">{ post.Author }</span>
-		<span class="post-date">{ post.CreatedAt.Format("01/02/2006") }</span>
-		<span class="post-time">{ post.CreatedAt.Format("15:04") }</span>
-		<span class="post-num">No. { strconv.Itoa(post.Id) }</span>
-	</header>
-	<section>
-		<p>{ post.Body }</p>
-	</section>
-</article>
-<br />
-}
+	for _, post := range (posts) {
+		<article class="post">
+			if post.MediaPath != "" {
+				<div class="post-img-container">
+					<img src={ fmt.Sprintf("/static/img/posts/%s", post.MediaPath) } class="post-img"/>
+				</div>
+			}
+			<header class="post-header">
+				<span class="post-author">{ post.Author }</span>
+				<span class="post-date">{ post.CreatedAt.Format("01/02/2006") }</span>
+				<span class="post-time">{ post.CreatedAt.Format("15:04") }</span>
+				<span class="post-num">No. { strconv.Itoa(post.Id) }</span>
+			</header>
+			<p>{ post.Body }</p>
+		</article>
+		<br/>
+	}
 }
 
 templ Thread(board database.Board, thread database.Thread, posts []database.Post) {
-@shared.Layout() {
-@BoardHeader(board)
-<div class="new-post-container">
-	<form id="newPostForm" hx-swap="none" hx-post={ fmt.Sprintf("/%s/threads/%d", board.Slug, thread.Id) } _="on htmx:afterRequest 
+	@shared.Layout() {
+		@BoardHeader(board)
+		<div class="new-post-container">
+			<form
+				hx-encoding="multipart/form-data"
+				id="newPostForm"
+				hx-swap="none"
+				hx-post={ fmt.Sprintf("/%s/threads/%d",
+		board.Slug, thread.Id) }
+				_="on htmx:afterRequest 
 			set #newPostBody.value to ''
-			then trigger refreshPosts on body">
-		<table>
-			<tbody>
-				<tr class="new-post-form-field">
-					<th>comment</th>
-					<td><textarea id="newPostBody" name="body" required></textarea></td>
-				</tr>
-			</tbody>
-		</table>
-		<button type="submit">Submit</button>
-	</form>
-</div>
-<div class="thread">
-	<article class="op-post">
-		if posts[0].MediaPath != "" {
-		<div class="post-img-container">
-			<img src={ fmt.Sprintf("/static/img/posts/%s", posts[0].MediaPath) } class="post-img" />
+			then trigger refreshPosts on body"
+			>
+				<table>
+					<tbody>
+						<tr class="new-post-form-field">
+							<th>comment</th>
+							<td><textarea id="newPostBody" name="body" required></textarea></td>
+						</tr>
+						<tr class="new-post-form-field">
+							<th>File</th>
+							<td><input name="file" type="file"/></td>
+						</tr>
+					</tbody>
+				</table>
+				<button type="submit">Submit</button>
+			</form>
 		</div>
-		}
-		<header class="post-header">
-			<h1 class="thread-subject">{ thread.Subject } -</h1>
-			<span class="post-author">{ posts[0].Author }</span>
-			<span class="post-date">{ posts[0].CreatedAt.Format("01/02/2006") }</span>
-			<span class="post-time">{ posts[0].CreatedAt.Format("15:04") }</span>
-			<span class="post-num">No. { strconv.Itoa(posts[0].Id) }</span>
-		</header>
-		<p class="post-body">{ posts[0].Body }</p>
-	</article>
-	<div hx-get={ fmt.Sprintf("/hx/%s/threads/%d/posts", board.Slug, thread.Id) }
-		hx-trigger="load, refreshPosts from:body"></div>
-</div>
-}
+		<div class="thread">
+			<article class="op-post">
+				if posts[0].MediaPath != "" {
+					<div class="post-img-container">
+						<img src={ fmt.Sprintf("/static/img/posts/%s", posts[0].MediaPath) } class="post-img"/>
+					</div>
+				}
+				<header class="post-header">
+					<h1 class="thread-subject">{ thread.Subject } -</h1>
+					<span class="post-author">{ posts[0].Author }</span>
+					<span class="post-date">{ posts[0].CreatedAt.Format("01/02/2006") }</span>
+					<span class="post-time">{ posts[0].CreatedAt.Format("15:04") }</span>
+					<span class="post-num">No. { strconv.Itoa(posts[0].Id) }</span>
+				</header>
+				<p class="post-body">{ posts[0].Body }</p>
+			</article>
+			<div
+				hx-get={ fmt.Sprintf("/hx/%s/threads/%d/posts", board.Slug, thread.Id) }
+				hx-trigger="load, refreshPosts from:body"
+			></div>
+		</div>
+	}
 }

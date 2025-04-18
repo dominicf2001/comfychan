@@ -2,9 +2,11 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -17,6 +19,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+const FILE_MEM_LIMIT int64 = 10 << 20
+
 var dev = true
 
 func disableCacheInDevMode(next http.Handler) http.Handler {
@@ -27,6 +31,24 @@ func disableCacheInDevMode(next http.Handler) http.Handler {
 		w.Header().Set("Cache-Control", "no-store")
 		next.ServeHTTP(w, r)
 	})
+}
+
+func savePostFile(file *multipart.File, header *multipart.FileHeader) error {
+	dstPath := filepath.Join("web/static/img/posts", header.Filename)
+
+	dst, err := os.Create(dstPath)
+	if err != nil {
+		log.Printf("os.Create: %v", err)
+		return err
+	}
+	defer dst.Close()
+
+	if _, err := io.Copy(dst, *file); err != nil {
+		log.Printf("io.Copy: %v", err)
+		return err
+	}
+
+	return nil
 }
 
 func main() {
@@ -119,37 +141,27 @@ func main() {
 	r.Post("/{slug}/threads", func(w http.ResponseWriter, r *http.Request) {
 		slug := chi.URLParam(r, "slug")
 
+		subject := r.FormValue("subject")
+		body := r.FormValue("body")
+
 		// 10 MB memory limit
-		if err := r.ParseMultipartForm(10 << 20); err != nil {
-			http.Error(w, "Bad form data", http.StatusBadRequest)
-			log.Printf("ParseForm: %v", err)
+		if err := r.ParseMultipartForm(FILE_MEM_LIMIT); err != nil {
+			http.Error(w, "Failed to parse form", http.StatusBadRequest)
+			log.Printf("ParseMultipartForm: %v", err)
 			return
 		}
 
 		file, header, err := r.FormFile("file")
 		if err != nil {
-			http.Error(w, "Failed to retrieve file from form", http.StatusBadRequest)
+			http.Error(w, "Failed to retrive file from form", http.StatusBadRequest)
 			log.Printf("FormFile: %v", err)
 			return
 		}
 		defer file.Close()
 
-		subject := r.FormValue("subject")
-		body := r.FormValue("body")
-
-		dstPath := filepath.Join("web/static/img/posts", header.Filename)
-
-		dst, err := os.Create(dstPath)
-		if err != nil {
-			http.Error(w, "Failed to create file", http.StatusInternalServerError)
-			log.Printf("os.Create: %v", err)
-			return
-		}
-		defer dst.Close()
-
-		if _, err := io.Copy(dst, file); err != nil {
+		if err := savePostFile(&file, header); err != nil {
 			http.Error(w, "Failed to save file", http.StatusInternalServerError)
-			log.Printf("io.Copy: %v", err)
+			log.Printf("savePostFile: %v", err)
 			return
 		}
 
@@ -172,8 +184,33 @@ func main() {
 		}
 
 		body := r.FormValue("body")
+		mediaPath := ""
 
-		if err := database.PutPost(db, threadId, body); err != nil {
+		// 10 MB memory limit
+		if err := r.ParseMultipartForm(FILE_MEM_LIMIT); err != nil {
+			http.Error(w, "Failed to parse form", http.StatusBadRequest)
+			log.Printf("ParseMultipartForm: %v", err)
+			return
+		}
+
+		file, header, err := r.FormFile("file")
+		if err != nil {
+			if !errors.Is(err, http.ErrMissingFile) {
+				http.Error(w, "Failed to retrive file from form", http.StatusBadRequest)
+				log.Printf("FormFile: %v", err)
+				return
+			}
+		} else {
+			defer file.Close()
+			if err := savePostFile(&file, header); err != nil {
+				http.Error(w, "Failed to save file", http.StatusInternalServerError)
+				log.Printf("savePostFile: %v", err)
+				return
+			}
+			mediaPath = header.Filename
+		}
+
+		if err := database.PutPost(db, threadId, body, mediaPath); err != nil {
 			http.Error(w, "Failed to create post", http.StatusInternalServerError)
 			log.Printf("PutPost: %v", err)
 			return
