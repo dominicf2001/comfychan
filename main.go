@@ -3,11 +3,14 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"github.com/dominicf2001/comfychan/internal/database"
-	"github.com/dominicf2001/comfychan/web/views"
-	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"net/http"
+
+	"github.com/dominicf2001/comfychan/internal/database"
+	"github.com/dominicf2001/comfychan/web/views"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var dev = true
@@ -29,20 +32,26 @@ func main() {
 	}
 	defer db.Close()
 
-	http.Handle("/static/",
+	r := chi.NewRouter()
+
+	r.Use(middleware.Logger)
+
+	r.Handle("/static/*",
 		disableCacheInDevMode(
 			http.StripPrefix("/static",
 				http.FileServer(http.Dir("web/static")))))
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		views.Index().Render(r.Context(), w)
 	})
 
-	http.HandleFunc("/comfy", func(w http.ResponseWriter, r *http.Request) {
-		board, err := database.GetBoard(db, "comfy")
+	r.Get("/{slug}", func(w http.ResponseWriter, r *http.Request) {
+		slug := chi.URLParam(r, "slug")
+
+		board, err := database.GetBoard(db, slug)
 		if err != nil {
-			http.Error(w, "Failed to load boards", http.StatusInternalServerError)
-			log.Printf("Error fetching boards: %v", err)
+			http.NotFound(w, r)
+			log.Printf("board %q not found: %v", slug, err)
 			return
 		}
 
@@ -50,5 +59,5 @@ func main() {
 	})
 
 	fmt.Println("Listening on :8080")
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":8080", r)
 }
