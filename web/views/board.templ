@@ -16,6 +16,8 @@ templ NewThreadForm(board database.Board) {
 		_="on htmx:afterRequest 
 		hide me 
 		then show #newThreadBtn 
+		then set #newPostBody.value to '' 
+		then set #newPostFile.value to '' 
 		then trigger refreshThreads on body"
 	>
 		<table>
@@ -26,11 +28,11 @@ templ NewThreadForm(board database.Board) {
 				</tr>
 				<tr class="new-post-form-field">
 					<th>Comment</th>
-					<td><textarea name="body" required></textarea></td>
+					<td><textarea id="newPostBody" name="body" required></textarea></td>
 				</tr>
 				<tr class="new-post-form-field">
 					<th>File</th>
-					<td><input name="file" type="file" required/></td>
+					<td><input id="newPostFile" name="file" type="file" required/></td>
 				</tr>
 			</tbody>
 		</table>

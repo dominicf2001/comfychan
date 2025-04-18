@@ -39,6 +39,7 @@ templ Thread(board database.Board, thread database.Thread, posts []database.Post
 		board.Slug, thread.Id) }
 				_="on htmx:afterRequest 
 			set #newPostBody.value to ''
+			then set #newPostFile.value to ''
 			then trigger refreshPosts on body"
 			>
 				<table>
@@ -49,7 +50,7 @@ templ Thread(board database.Board, thread database.Thread, posts []database.Post
 						</tr>
 						<tr class="new-post-form-field">
 							<th>File</th>
-							<td><input name="file" type="file"/></td>
+							<td><input id="newPostFile" name="file" type="file"/></td>
 						</tr>
 					</tbody>
 				</table>
@@ -72,10 +73,9 @@ templ Thread(board database.Board, thread database.Thread, posts []database.Post
 				</header>
 				<p class="post-body">{ posts[0].Body }</p>
 			</article>
-			<div
-				hx-get={ fmt.Sprintf("/hx/%s/threads/%d/posts", board.Slug, thread.Id) }
-				hx-trigger="load, refreshPosts from:body"
-			></div>
+			<div hx-get={ fmt.Sprintf("/hx/%s/threads/%d/posts", board.Slug, thread.Id) } hx-trigger="refreshPosts from:body">
+				@ThreadPosts(posts[1:])
+			</div>
 		</div>
 	}
 }
