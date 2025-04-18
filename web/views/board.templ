@@ -13,11 +13,11 @@ templ NewThreadForm(board database.Board) {
 		then trigger refreshThreads on body">
 	<table>
 		<tbody>
-			<tr class="new-thread-form-field">
+			<tr class="new-post-form-field">
 				<th>Subject</th>
 				<td><input name="subject" /></td>
 			</tr>
-			<tr class="new-thread-form-field">
+			<tr class="new-post-form-field">
 				<th>Comment</th>
 				<td><textarea name="body" required></textarea></td>
 			</tr>
@@ -40,7 +40,7 @@ templ BoardHeader(board database.Board) {
 templ Board(board database.Board) {
 @shared.Layout() {
 @BoardHeader(board)
-<div class="new-thread-container">
+<div class="new-post-container">
 	<button _="on click 
 		hide me 
 		then show #newThreadForm" id="newThreadBtn">[New Thread]</button>

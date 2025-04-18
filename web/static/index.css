@@ -59,7 +59,7 @@ body {
     margin: 2rem;
 }
 
-.catalog-post {
+.catalog-preview {
     padding: 10px;
     border: 2px solid rgba(111, 111, 111, 0.34);
     min-width: 140px;
@@ -67,18 +67,18 @@ body {
     max-height: 192px;
 }
 
-.catalog-post h1 {
+.catalog-preview h1 {
     font-size: 14px;
     color: #0F0C5D;
     font-weight: bold;
 }
 
-.catalog-post p {
+.catalog-preview p {
     margin-top: 10px;
     font-size: 12px;
 }
 
-.catalog-post-link {
+.catalog-preview-link {
     cursor: pointer;
 }
 
@@ -106,13 +106,13 @@ body {
     margin-left: auto;
 }
 
-.new-thread-container {
+.new-post-container {
     width: max-content;
     margin: auto;
     margin-top: 16px;
 }
 
-.new-thread-form-field th {
+.new-post-form-field th {
     border: 1px solid black;
     text-align: left;
     vertical-align: middle;
@@ -122,7 +122,7 @@ body {
     font-size: .8rem;
 }
 
-.new-thread-form-field td {
+.new-post-form-field td {
     display: block;
     margin: 2px;
 }

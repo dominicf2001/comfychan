@@ -36,9 +36,9 @@ func GetBoard(db *sql.DB, slug string) (Board, error) {
 	return result, row.Err()
 }
 
-func GetThreads(db *sql.DB, slug string) ([]Thread, error) {
+func GetThreads(db *sql.DB, boardSlug string) ([]Thread, error) {
 	rows, err := db.Query(
-		`SELECT id, board_slug, subject, created_at, bumped_at FROM threads WHERE board_slug = ?`, slug)
+		`SELECT id, board_slug, subject, created_at, bumped_at FROM threads WHERE board_slug = ?`, boardSlug)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func GetThread(db *sql.DB, threadId int) (Thread, error) {
 	return thread, row.Err()
 }
 
-func GetThreadPosts(db *sql.DB, threadId int) ([]Post, error) {
+func GetPosts(db *sql.DB, threadId int) ([]Post, error) {
 	rows, err := db.Query(`SELECT id, thread_id, author, body, created_at FROM posts where thread_id = ?`, threadId)
 	if err != nil {
 		return nil, err

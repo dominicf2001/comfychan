@@ -3,15 +3,14 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"log"
-	"net/http"
-	"strconv"
-
 	"github.com/dominicf2001/comfychan/internal/database"
 	"github.com/dominicf2001/comfychan/web/views"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/mattn/go-sqlite3"
+	"log"
+	"net/http"
+	"strconv"
 )
 
 var dev = true
@@ -52,10 +51,12 @@ func main() {
 	// MAIN ROUTES
 	// -----------------
 
+	// INDEX PAGE
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		views.Index().Render(r.Context(), w)
 	})
 
+	// MAIN BOARD PAGE
 	r.Get("/{slug}", func(w http.ResponseWriter, r *http.Request) {
 		slug := chi.URLParam(r, "slug")
 
@@ -69,6 +70,7 @@ func main() {
 		views.Board(board).Render(r.Context(), w)
 	})
 
+	// THREAD PAGE
 	r.Get("/{slug}/threads/{threadId}", func(w http.ResponseWriter, r *http.Request) {
 		slug := chi.URLParam(r, "slug")
 		// TODO: use relative thread_nums (see issue #1)
@@ -93,7 +95,7 @@ func main() {
 			return
 		}
 
-		posts, err := database.GetThreadPosts(db, threadId)
+		posts, err := database.GetPosts(db, threadId)
 		if err != nil {
 			http.Error(w, "Failed to get thread posts", http.StatusInternalServerError)
 			log.Printf("Failed to get thread %q posts: %v", threadIdStr, err)
@@ -109,6 +111,27 @@ func main() {
 		views.Thread(board, thread, posts).Render(r.Context(), w)
 	})
 
+	// CREATE THREAD
+	r.Post("/{slug}/threads", func(w http.ResponseWriter, r *http.Request) {
+		slug := chi.URLParam(r, "slug")
+
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, "Bad form data", http.StatusBadRequest)
+			log.Printf("ParseForm: %v", err)
+			return
+		}
+
+		subject := r.FormValue("subject")
+		body := r.FormValue("body")
+
+		if err := database.PutThread(db, slug, subject, body); err != nil {
+			http.Error(w, "Failed to create thread", http.StatusInternalServerError)
+			log.Printf("PutThread: %v", err)
+			return
+		}
+	})
+
+	// CREATE POST
 	r.Post("/{slug}/threads/{threadId}", func(w http.ResponseWriter, r *http.Request) {
 		// slug := chi.URLParam(r, "slug")
 		// TODO: use relative thread_nums (see issue #1)
@@ -134,31 +157,13 @@ func main() {
 		}
 	})
 
-	r.Post("/{slug}/threads", func(w http.ResponseWriter, r *http.Request) {
-		slug := chi.URLParam(r, "slug")
-
-		if err := r.ParseForm(); err != nil {
-			http.Error(w, "Bad form data", http.StatusBadRequest)
-			log.Printf("ParseForm: %v", err)
-			return
-		}
-
-		subject := r.FormValue("subject")
-		body := r.FormValue("body")
-
-		if err := database.PutThread(db, slug, subject, body); err != nil {
-			http.Error(w, "Failed to create thread", http.StatusInternalServerError)
-			log.Printf("PutThread: %v", err)
-			return
-		}
-	})
-
 	// -----------------
 
 	// -----------------
-	// PARTIALS
+	// PARTIALS (htmx)
 	// -----------------
 
+	// CATALOG
 	r.Get("/hx/{slug}/catalog", func(w http.ResponseWriter, r *http.Request) {
 		slug := chi.URLParam(r, "slug")
 		threads, err := database.GetThreads(db, slug)
@@ -170,10 +175,10 @@ func main() {
 
 		previews := make([]views.CatalogThreadPreview, 0, len(threads))
 		for _, thread := range threads {
-			posts, err := database.GetThreadPosts(db, thread.Id)
+			posts, err := database.GetPosts(db, thread.Id)
 			if err != nil {
 				http.Error(w, "Error getting thread posts", http.StatusBadRequest)
-				log.Printf("GetThreadPosts: %v", err)
+				log.Printf("GetPosts: %v", err)
 				return
 			}
 

@@ -10,11 +10,11 @@ import (
 templ Thread(board database.Board, thread database.Thread, posts []database.Post) {
 @shared.Layout() {
 @BoardHeader(board)
-<div class="new-thread-container">
+<div class="new-post-container">
 	<form id="newPostForm" hx-swap="none" hx-post={ fmt.Sprintf("/%s/threads/%d", board.Slug, thread.Id) }>
 		<table>
 			<tbody>
-				<tr class="new-thread-form-field">
+				<tr class="new-post-form-field">
 					<th>Comment</th>
 					<td><textarea name="body" required></textarea></td>
 				</tr>
