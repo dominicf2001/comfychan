@@ -89,7 +89,7 @@ func GetPosts(db *sql.DB, threadId int) ([]Post, error) {
 	return result, rows.Err()
 }
 
-func PutThread(db *sql.DB, boardSlug string, subject string, body string) error {
+func PutThread(db *sql.DB, boardSlug string, subject string, body string, mediaPath string) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return err
@@ -106,7 +106,7 @@ func PutThread(db *sql.DB, boardSlug string, subject string, body string) error 
 		return err
 	}
 
-	_, err = tx.Exec(`INSERT INTO posts (thread_id, body, media_path) VALUES (?, ?, ?)`, threadId, body, "default.png")
+	_, err = tx.Exec(`INSERT INTO posts (thread_id, body, media_path) VALUES (?, ?, ?)`, threadId, body, mediaPath)
 	if err != nil {
 		return err
 	}

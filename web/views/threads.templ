@@ -13,7 +13,9 @@ templ ThreadsCatalog(previews []CatalogThreadPreview) {
 <div id="catalog">
 	for _, preview := range previews {
 	<div class="catalog-preview">
-		<img class="catalog-preview-img" src={ fmt.Sprintf("/static/img/posts/%s", preview.MediaPath) } />
+		<a href={ templ.SafeURL(preview.ThreadURL) }>
+			<img class="catalog-preview-img" src={ fmt.Sprintf("/static/img/posts/%s", preview.MediaPath) } />
+		</a>
 		<h1><a href={ templ.SafeURL(preview.ThreadURL) } class="catalog-preview-link">{ preview.Subject }</a></h1>
 		<p>{ preview.Body }</p>
 	</div>

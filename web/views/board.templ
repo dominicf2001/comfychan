@@ -7,7 +7,8 @@ database "github.com/dominicf2001/comfychan/internal/database"
 )
 
 templ NewThreadForm(board database.Board) {
-<form style="display: none;" id="newThreadForm" hx-swap="none" hx-post={ fmt.Sprintf("/%s/threads", board.Slug) } _="on htmx:afterRequest 
+<form hx-encoding="multipart/form-data" style="display: none;" id="newThreadForm" hx-swap="none" hx-post={
+	fmt.Sprintf("/%s/threads", board.Slug) } _="on htmx:afterRequest 
 		hide me 
 		then show #newThreadBtn 
 		then trigger refreshThreads on body">
@@ -20,6 +21,10 @@ templ NewThreadForm(board database.Board) {
 			<tr class="new-post-form-field">
 				<th>Comment</th>
 				<td><textarea name="body" required></textarea></td>
+			</tr>
+			<tr class="new-post-form-field">
+				<th>File</th>
+				<td><input name="file" type="file" required /></td>
 			</tr>
 		</tbody>
 	</table>

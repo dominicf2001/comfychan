@@ -3,14 +3,18 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strconv"
+
 	"github.com/dominicf2001/comfychan/internal/database"
 	"github.com/dominicf2001/comfychan/web/views"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/mattn/go-sqlite3"
-	"log"
-	"net/http"
-	"strconv"
 )
 
 var dev = true
@@ -115,16 +119,41 @@ func main() {
 	r.Post("/{slug}/threads", func(w http.ResponseWriter, r *http.Request) {
 		slug := chi.URLParam(r, "slug")
 
-		if err := r.ParseForm(); err != nil {
+		// 10 MB memory limit
+		if err := r.ParseMultipartForm(10 << 20); err != nil {
 			http.Error(w, "Bad form data", http.StatusBadRequest)
 			log.Printf("ParseForm: %v", err)
 			return
 		}
 
+		file, header, err := r.FormFile("file")
+		if err != nil {
+			http.Error(w, "Failed to retrieve file from form", http.StatusBadRequest)
+			log.Printf("FormFile: %v", err)
+			return
+		}
+		defer file.Close()
+
 		subject := r.FormValue("subject")
 		body := r.FormValue("body")
 
-		if err := database.PutThread(db, slug, subject, body); err != nil {
+		dstPath := filepath.Join("web/static/img/posts", header.Filename)
+
+		dst, err := os.Create(dstPath)
+		if err != nil {
+			http.Error(w, "Failed to create file", http.StatusInternalServerError)
+			log.Printf("os.Create: %v", err)
+			return
+		}
+		defer dst.Close()
+
+		if _, err := io.Copy(dst, file); err != nil {
+			http.Error(w, "Failed to save file", http.StatusInternalServerError)
+			log.Printf("io.Copy: %v", err)
+			return
+		}
+
+		if err := database.PutThread(db, slug, subject, body, header.Filename); err != nil {
 			http.Error(w, "Failed to create thread", http.StatusInternalServerError)
 			log.Printf("PutThread: %v", err)
 			return
@@ -139,12 +168,6 @@ func main() {
 		threadId, err := strconv.Atoi(threadIdStr)
 		if err != nil {
 			http.Error(w, "Invalid thread id", http.StatusBadRequest)
-			return
-		}
-
-		if err := r.ParseForm(); err != nil {
-			http.Error(w, "Bad form data", http.StatusBadRequest)
-			log.Printf("ParseForm: %v", err)
 			return
 		}
 
