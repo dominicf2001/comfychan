@@ -97,7 +97,7 @@ func main() {
 
 		posts, err := database.GetPosts(db, threadId)
 		if err != nil {
-			http.Error(w, "Failed to get thread posts", http.StatusInternalServerError)
+			http.Error(w, "Failed to get posts", http.StatusInternalServerError)
 			log.Printf("Failed to get thread %q posts: %v", threadIdStr, err)
 			return
 		}
@@ -168,7 +168,7 @@ func main() {
 		slug := chi.URLParam(r, "slug")
 		threads, err := database.GetThreads(db, slug)
 		if err != nil {
-			http.Error(w, "Failed to get board threads", http.StatusInternalServerError)
+			http.Error(w, "Failed to get threads", http.StatusInternalServerError)
 			log.Printf("GetThreads: %v", err)
 			return
 		}
@@ -177,7 +177,7 @@ func main() {
 		for _, thread := range threads {
 			posts, err := database.GetPosts(db, thread.Id)
 			if err != nil {
-				http.Error(w, "Error getting thread posts", http.StatusBadRequest)
+				http.Error(w, "Failed to get posts", http.StatusBadRequest)
 				log.Printf("GetPosts: %v", err)
 				return
 			}
@@ -196,6 +196,34 @@ func main() {
 		}
 
 		views.ThreadsCatalog(previews).Render(r.Context(), w)
+	})
+
+	// THREAD POSTS
+	r.Get("/hx/{slug}/threads/{threadId}/posts", func(w http.ResponseWriter, r *http.Request) {
+		// slug := chi.URLParam(r, "slug")
+		// TODO: use relative thread_nums (see issue #1)
+		threadIdStr := chi.URLParam(r, "threadId")
+		threadId, err := strconv.Atoi(threadIdStr)
+		if err != nil {
+			http.Error(w, "Invalid thread id", http.StatusBadRequest)
+			return
+		}
+
+		posts, err := database.GetPosts(db, threadId)
+		if err != nil {
+			http.Error(w, "Failed to get posts", http.StatusBadRequest)
+			log.Printf("GetPosts: %v", err)
+			return
+		}
+
+		if len(posts) == 0 {
+			http.Error(w, "Malformed thread", http.StatusInternalServerError)
+			log.Printf("Thread %d has no posts", threadId)
+			return
+		}
+
+		// dont pass the op post. only replies
+		views.ThreadPosts(posts[1:]).Render(r.Context(), w)
 	})
 
 	// -----------------

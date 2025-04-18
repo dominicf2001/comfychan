@@ -7,16 +7,34 @@ import (
 "strconv"
 )
 
+templ ThreadPosts(posts []database.Post) {
+for _, post := range (posts) {
+<article class="post">
+	<header class="post-header">
+		<span class="post-author">{ post.Author }</span>
+		<span class="post-date">{ post.CreatedAt.Format("01/02/2006") }</span>
+		<span class="post-time">{ post.CreatedAt.Format("15:04") }</span>
+		<span class="post-num">No. { strconv.Itoa(post.Id) }</span>
+	</header>
+	<section>
+		<p>{ post.Body }</p>
+	</section>
+</article>
+}
+}
+
 templ Thread(board database.Board, thread database.Thread, posts []database.Post) {
 @shared.Layout() {
 @BoardHeader(board)
 <div class="new-post-container">
-	<form id="newPostForm" hx-swap="none" hx-post={ fmt.Sprintf("/%s/threads/%d", board.Slug, thread.Id) }>
+	<form id="newPostForm" hx-swap="none" hx-post={ fmt.Sprintf("/%s/threads/%d", board.Slug, thread.Id) } _="on htmx:afterRequest 
+			set #newPostBody.value to ''
+			then trigger refreshPosts on body">
 		<table>
 			<tbody>
 				<tr class="new-post-form-field">
 					<th>Comment</th>
-					<td><textarea name="body" required></textarea></td>
+					<td><textarea id="newPostBody" name="body" required></textarea></td>
 				</tr>
 			</tbody>
 		</table>
@@ -36,19 +54,8 @@ templ Thread(board database.Board, thread database.Thread, posts []database.Post
 			<p>{ posts[0].Body }</p>
 		</section>
 	</article>
-	for _, post := range (posts[1:]) {
-	<article class="post">
-		<header class="post-header">
-			<span class="post-author">{ post.Author }</span>
-			<span class="post-date">{ post.CreatedAt.Format("01/02/2006") }</span>
-			<span class="post-time">{ post.CreatedAt.Format("15:04") }</span>
-			<span class="post-num">No. { strconv.Itoa(post.Id) }</span>
-		</header>
-		<section>
-			<p>{ post.Body }</p>
-		</section>
-	</article>
-	}
+	<div hx-get={ fmt.Sprintf("/hx/%s/threads/%d/posts", board.Slug, thread.Id) }
+		hx-trigger="load, refreshPosts from:body"></div>
 </div>
 }
 }
