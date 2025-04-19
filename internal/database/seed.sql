@@ -39,16 +39,3 @@ CREATE TABLE IF NOT EXISTS posts (
 INSERT INTO boards (slug, name, tag) VALUES 
     ('comfy', 'Comfy', 'Be comfy, fren'),
     ('g', 'Technology', 'Beep boop');
-
--- Welcome threads
-
-  -- /comfy/
-    INSERT INTO threads (board_slug, subject) VALUES ( 
-        'comfy',
-        'Welcome to /comfy/.' 
-    );
-    INSERT INTO posts (thread_id, body, media_path) VALUES (
-        (SELECT id FROM threads WHERE subject LIKE 'Welcome to /comfy/.%'),
-        'Post comfy. Be nice.',
-        '1.jpg'
-    );

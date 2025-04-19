@@ -19,7 +19,10 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+// 10 MB memory limit
 const FILE_MEM_LIMIT int64 = 10 << 20
+const POST_IMG_FULL_PATH = "web/static/img/posts/full"
+const POST_IMG_THUMB_PATH = "web/static/img/posts/thumb"
 
 var dev = true
 
@@ -34,17 +37,35 @@ func disableCacheInDevMode(next http.Handler) http.Handler {
 }
 
 func savePostFile(file *multipart.File, header *multipart.FileHeader) error {
-	dstPath := filepath.Join("web/static/img/posts", header.Filename)
+	dstPathFull := filepath.Join(POST_IMG_FULL_PATH, header.Filename)
+	dstPathThumb := filepath.Join(POST_IMG_THUMB_PATH, header.Filename)
 
-	dst, err := os.Create(dstPath)
+	// save full
+	dstFull, err := os.Create(dstPathFull)
 	if err != nil {
-		log.Printf("os.Create: %v", err)
+		log.Printf("os.Create (full): %v", err)
 		return err
 	}
-	defer dst.Close()
+	defer dstFull.Close()
+	if _, err := io.Copy(dstFull, *file); err != nil {
+		log.Printf("io.Copy (full): %v", err)
+		return err
+	}
 
-	if _, err := io.Copy(dst, *file); err != nil {
-		log.Printf("io.Copy: %v", err)
+	if _, err := (*file).Seek(0, 0); err != nil { // rewind file
+		log.Printf("seek file (thumb): %v", err)
+		return err
+	}
+
+	// save thumbnail
+	dstThumb, err := os.Create(dstPathThumb)
+	if err != nil {
+		log.Printf("os.Create (thumb): %v", err)
+		return err
+	}
+	defer dstThumb.Close()
+	if _, err := io.Copy(dstThumb, *file); err != nil {
+		log.Printf("io.Copy (thumb): %v", err)
 		return err
 	}
 
@@ -144,7 +165,6 @@ func main() {
 		subject := r.FormValue("subject")
 		body := r.FormValue("body")
 
-		// 10 MB memory limit
 		if err := r.ParseMultipartForm(FILE_MEM_LIMIT); err != nil {
 			http.Error(w, "Failed to parse form", http.StatusBadRequest)
 			log.Printf("ParseMultipartForm: %v", err)
@@ -186,7 +206,6 @@ func main() {
 		body := r.FormValue("body")
 		mediaPath := ""
 
-		// 10 MB memory limit
 		if err := r.ParseMultipartForm(FILE_MEM_LIMIT); err != nil {
 			http.Error(w, "Failed to parse form", http.StatusBadRequest)
 			log.Printf("ParseMultipartForm: %v", err)
