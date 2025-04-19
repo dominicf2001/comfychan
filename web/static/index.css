@@ -152,6 +152,7 @@ body {
     font-weight: bold;
     color: #0F0C5D;
     margin-right: 5px;
+    float: left;
 }
 
 .post-op {
@@ -174,7 +175,6 @@ body {
 }
 
 .post-header {
-    display: flex;
     margin-bottom: 10px;
 }
 

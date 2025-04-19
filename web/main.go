@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/disintegration/imaging"
 	"github.com/dominicf2001/comfychan/internal/database"
@@ -28,9 +29,9 @@ const POST_IMG_THUMB_PATH = "web/static/img/posts/thumb"
 
 var dev = true
 
-func savePostFile(file *multipart.File, header *multipart.FileHeader) error {
-	dstPathFull := filepath.Join(POST_IMG_FULL_PATH, header.Filename)
-	dstPathThumb := filepath.Join(POST_IMG_THUMB_PATH, header.Filename)
+func savePostFile(file *multipart.File, filename string) error {
+	dstPathFull := filepath.Join(POST_IMG_FULL_PATH, filename)
+	dstPathThumb := filepath.Join(POST_IMG_THUMB_PATH, filename)
 
 	// FULL
 	if err := os.MkdirAll(POST_IMG_FULL_PATH, 0755); err != nil {
@@ -66,7 +67,7 @@ func savePostFile(file *multipart.File, header *multipart.FileHeader) error {
 		return err
 	}
 
-	thumb := imaging.Resize(img, 200, 0, imaging.Lanczos)
+	thumb := imaging.Resize(img, 300, 0, imaging.Lanczos)
 	if err = imaging.Save(thumb, dstPathThumb); err != nil {
 		log.Printf("imaging.Save: %v", err)
 		return err
@@ -192,13 +193,14 @@ func main() {
 		}
 		defer file.Close()
 
-		if err := savePostFile(&file, header); err != nil {
+		filename := strconv.FormatInt(time.Now().UnixNano(), 10) + filepath.Ext(header.Filename)
+		if err := savePostFile(&file, filename); err != nil {
 			http.Error(w, "Failed to save file", http.StatusInternalServerError)
 			log.Printf("savePostFile: %v", err)
 			return
 		}
 
-		if err := database.PutThread(db, slug, subject, body, header.Filename); err != nil {
+		if err := database.PutThread(db, slug, subject, body, filename); err != nil {
 			http.Error(w, "Failed to create thread", http.StatusInternalServerError)
 			log.Printf("PutThread: %v", err)
 			return
@@ -234,12 +236,13 @@ func main() {
 			}
 		} else {
 			defer file.Close()
-			if err := savePostFile(&file, header); err != nil {
+			filename := strconv.FormatInt(time.Now().UnixNano(), 10) + filepath.Ext(header.Filename)
+			if err := savePostFile(&file, filename); err != nil {
 				http.Error(w, "Failed to save file", http.StatusInternalServerError)
 				log.Printf("savePostFile: %v", err)
 				return
 			}
-			mediaPath = header.Filename
+			mediaPath = filename
 		}
 
 		if err := database.PutPost(db, threadId, body, mediaPath); err != nil {
