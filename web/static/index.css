@@ -146,12 +146,13 @@ body {
 
 .thread-subject {
     font-weight: bold;
-    color: #b294bb;
+    color: #0F0C5D;
     margin-right: 5px;
 }
 
 .post-op {
     margin-bottom: 10px;
+    font-size: 14px;
 }
 
 .post {
@@ -159,8 +160,9 @@ body {
     margin: 5x;
     padding: 10px;
     background-color: #D6DAF0;
-    border: 1px solid #282a2e;
+    border: 1px solid #B7C5D9;
     margin-bottom: 10px;
+    font-size: 14px;
 }
 
 .post-highlighted {
@@ -209,6 +211,17 @@ body {
     color: #D00;
     text-decoration: underline;
     cursor: pointer;
+}
+
+.reply-link-header {
+    color: rgb(52, 52, 92);
+    text-decoration: underline;
+    cursor: pointer;
+    margin-left: 8px;
+}
+
+.reply-link-header:hover {
+    color: #D00;
 }
 
 /* GENERAL LAYOUT */

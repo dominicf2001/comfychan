@@ -34,8 +34,9 @@ templ ThreadPost(post database.Post, thread *database.Thread) {
 				_={ fmt.Sprintf("on click set #newPostBody.value to #newPostBody.value + '>>%d\n'", post.Id) }
 				class=" post-num"
 			>
-				No. { strconv.Itoa(post.Id) }
+				No.{ strconv.Itoa(post.Id) }
 			</span>
+			<div class="post-replies"></div>
 		</header>
 		<p>
 			@templ.Raw(util.EnrichPost(post.Body))
@@ -52,6 +53,7 @@ templ ThreadPosts(posts []database.Post) {
 
 templ Thread(board database.Board, thread database.Thread, posts []database.Post) {
 	@shared.Layout() {
+		<script src="/static/thread.js" defer></script>
 		@BoardHeader(board)
 		<div class="new-post-container">
 			<form
