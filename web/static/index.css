@@ -111,6 +111,11 @@ body {
     margin-left: auto;
 }
 
+#newPostBody {
+    width: 270px;
+    height: 100px;
+}
+
 .new-post-container {
     width: max-content;
     margin: auto;
@@ -145,6 +150,23 @@ body {
     margin-right: 5px;
 }
 
+.post-op {
+    margin-bottom: 10px;
+}
+
+.post {
+    display: inline-block;
+    margin: 5x;
+    padding: 10px;
+    background-color: #D6DAF0;
+    border: 1px solid #282a2e;
+    margin-bottom: 10px;
+}
+
+.post-highlighted {
+    background: #D6BAD0;
+}
+
 .post-header {
     display: flex;
     margin-bottom: 10px;
@@ -174,21 +196,19 @@ body {
     line-height: 1.3;
 }
 
-.op-post {
-    margin-bottom: 10px;
-}
-
-.post {
-    display: inline-block;
-    margin: 5x;
-    padding: 10px;
-    background-color: #D6DAF0;
-    border: 1px solid #282a2e;
-    margin-bottom: 10px;
+.post-num:hover {
+    cursor: pointer;
+    color: #ff0000;
 }
 
 .greentext {
     color: #789922
+}
+
+.reply-link {
+    color: #D00;
+    text-decoration: underline;
+    cursor: pointer;
 }
 
 /* GENERAL LAYOUT */

@@ -8,24 +8,44 @@ import (
 	"strconv"
 )
 
+func getPostClass(isOp bool) string {
+	if isOp {
+		return "post-op"
+	}
+	return "post"
+}
+
+templ ThreadPost(post database.Post, thread *database.Thread) {
+	{{ isOp := thread != nil }}
+	<article id={ fmt.Sprintf("post-%d", post.Id) } class={ getPostClass(isOp) }>
+		if post.MediaPath != "" {
+			<div class="post-img-container">
+				<img src={ fmt.Sprintf("/static/img/posts/%s", post.MediaPath) } class="post-img"/>
+			</div>
+		}
+		<header class="post-header">
+			if isOp && thread.Subject != "" {
+				<h1 class="thread-subject">{ thread.Subject } -</h1>
+			}
+			<span class="post-author">{ post.Author }</span>
+			<span class="post-date">{ post.CreatedAt.Format("01/02/2006") }</span>
+			<span class="post-time">{ post.CreatedAt.Format("15:04") }</span>
+			<span
+				_={ fmt.Sprintf("on click set #newPostBody.value to #newPostBody.value + '>>%d\n'", post.Id) }
+				class=" post-num"
+			>
+				No. { strconv.Itoa(post.Id) }
+			</span>
+		</header>
+		<p>
+			@templ.Raw(util.EnrichPost(post.Body))
+		</p>
+	</article>
+}
+
 templ ThreadPosts(posts []database.Post) {
 	for _, post := range (posts) {
-		<article class="post">
-			if post.MediaPath != "" {
-				<div class="post-img-container">
-					<img src={ fmt.Sprintf("/static/img/posts/%s", post.MediaPath) } class="post-img"/>
-				</div>
-			}
-			<header class="post-header">
-				<span class="post-author">{ post.Author }</span>
-				<span class="post-date">{ post.CreatedAt.Format("01/02/2006") }</span>
-				<span class="post-time">{ post.CreatedAt.Format("15:04") }</span>
-				<span class="post-num">No. { strconv.Itoa(post.Id) }</span>
-			</header>
-			<p>
-				@templ.Raw(util.EnrichPost(post.Body))
-			</p>
-		</article>
+		@ThreadPost(post, nil)
 		<br/>
 	}
 }
@@ -61,23 +81,7 @@ templ Thread(board database.Board, thread database.Thread, posts []database.Post
 			</form>
 		</div>
 		<div class="thread">
-			<article class="op-post">
-				if posts[0].MediaPath != "" {
-					<div class="post-img-container">
-						<img src={ fmt.Sprintf("/static/img/posts/%s", posts[0].MediaPath) } class="post-img"/>
-					</div>
-				}
-				<header class="post-header">
-					<h1 class="thread-subject">{ thread.Subject } -</h1>
-					<span class="post-author">{ posts[0].Author }</span>
-					<span class="post-date">{ posts[0].CreatedAt.Format("01/02/2006") }</span>
-					<span class="post-time">{ posts[0].CreatedAt.Format("15:04") }</span>
-					<span class="post-num">No. { strconv.Itoa(posts[0].Id) }</span>
-				</header>
-				<p class="post-body">
-					@templ.Raw(util.EnrichPost(posts[0].Body))
-				</p>
-			</article>
+			@ThreadPost(posts[0], &thread)
 			<div hx-get={ fmt.Sprintf("/hx/%s/threads/%d/posts", board.Slug, thread.Id) } hx-trigger="refreshPosts from:body">
 				@ThreadPosts(posts[1:])
 			</div>

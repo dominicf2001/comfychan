@@ -1,1 +1,57 @@
 const $ = (id) => document.getElementById(id);
+
+function isOffScreen(el) {
+    const rect = el.getBoundingClientRect();
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    const vw = window.innerWidth || document.documentElement.clientWidth;
+
+    return (
+        rect.bottom < 0 ||
+        rect.top > vh ||
+        rect.right < 0 ||
+        rect.left > vw
+    );
+}
+
+function insertAfter(referenceNode, newNode) {
+    referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+}
+
+function onReplyLinkClick(e) {
+    const hoveringPost = document.getElementById("hoveringPost");
+    hoveringPost?.remove();
+}
+
+function highlightPost(postId, e, status = true) {
+    const posts = Array.from(document.querySelectorAll("article"));
+    const postToHighlight = posts.find(p => +p.id.split("-")[1] === +postId);
+    if (!postToHighlight) return;
+
+    const isOp = postToHighlight.id === posts[0]?.id;
+    if (isOffScreen(postToHighlight) || isOp) {
+        if (e.type === "mouseleave") {
+            const hoveringPost = document.querySelector("#hoveringPost")
+            hoveringPost.remove();
+        }
+        else {
+            const postCopy = postToHighlight.cloneNode(true);
+            postCopy.style.position = "absolute";
+            postCopy.id = "hoveringPost";
+
+            if (isOp) {
+                postCopy.classList.remove("post-op");
+                postCopy.classList.add("post");
+            }
+
+            insertAfter(e.target, postCopy);
+        }
+    }
+    else {
+        if (status) {
+            postToHighlight.classList.add("post-highlighted");
+        }
+        else {
+            postToHighlight.classList.remove("post-highlighted");
+        }
+    }
+}
