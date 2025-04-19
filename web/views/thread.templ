@@ -20,7 +20,13 @@ templ ThreadPost(post database.Post, thread *database.Thread) {
 	<article id={ fmt.Sprintf("post-%d", post.Id) } class={ getPostClass(isOp) }>
 		if post.MediaPath != "" {
 			<div class="post-img-container">
-				<img loading="lazy" src={ fmt.Sprintf("/static/img/posts/thumb/%s", post.MediaPath) } class="post-img"/>
+				<img
+					onclick="togglePostImage(this)"
+					loading="lazy"
+					src={ fmt.Sprintf("/static/img/posts/thumb/%s",
+			post.MediaPath) }
+					class="post-img"
+				/>
 			</div>
 		}
 		<header class="post-header">
@@ -84,7 +90,11 @@ templ Thread(board database.Board, thread database.Thread, posts []database.Post
 		</div>
 		<div class="thread">
 			@ThreadPost(posts[0], &thread)
-			<div hx-get={ fmt.Sprintf("/hx/%s/threads/%d/posts", board.Slug, thread.Id) } hx-trigger="refreshPosts from:body">
+			<div
+				hx-get={ fmt.Sprintf("/hx/%s/threads/%d/posts", board.Slug, thread.Id) }
+				hx-trigger="refreshPosts from:body"
+				_="on htmx:afterSwap call insertHeaderReplies()"
+			>
 				@ThreadPosts(posts[1:])
 			</div>
 		</div>
