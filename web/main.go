@@ -235,24 +235,26 @@ func main() {
 
 		previews := make([]views.CatalogThreadPreview, 0, len(threads))
 		for _, thread := range threads {
-			posts, err := database.GetPosts(db, thread.Id)
+			op, err := database.GetOriginalPost(db, thread.Id)
 			if err != nil {
 				http.Error(w, "Failed to get posts", http.StatusBadRequest)
-				log.Printf("GetPosts: %v", err)
+				log.Printf("GetOriginalPost: %v", err)
 				return
 			}
 
-			if len(posts) == 0 || posts[0].MediaPath == "" {
+			log.Printf("OP: %+v", op)
+
+			if op.MediaPath == "" {
 				http.Error(w, "Malformed thread", http.StatusInternalServerError)
-				log.Printf("Thread %d has no posts or no OP image", thread.Id)
+				log.Printf("Thread %d has no OP image", thread.Id)
 				return
 			}
 
 			previews = append(previews, views.CatalogThreadPreview{
 				Subject:   thread.Subject,
-				Body:      posts[0].Body,
+				Body:      op.Body,
 				ThreadURL: fmt.Sprintf("/%s/threads/%d", slug, thread.Id),
-				MediaPath: posts[0].MediaPath,
+				MediaPath: op.MediaPath,
 			})
 		}
 
