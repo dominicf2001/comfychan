@@ -20,7 +20,7 @@ templ ThreadPost(post database.Post, thread *database.Thread) {
 	<article id={ fmt.Sprintf("post-%d", post.Id) } class={ getPostClass(isOp) }>
 		if post.MediaPath != "" {
 			<div class="post-img-container">
-				<img src={ fmt.Sprintf("/static/img/posts/full/%s", post.MediaPath) } class="post-img"/>
+				<img loading="lazy" src={ fmt.Sprintf("/static/img/posts/thumb/%s", post.MediaPath) } class="post-img"/>
 			</div>
 		}
 		<header class="post-header">

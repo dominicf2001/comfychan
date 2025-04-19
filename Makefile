@@ -20,5 +20,4 @@ db/seed/f:
 	rm ./internal/database/comfychan.db && sqlite3 ./internal/database/comfychan.db < ./internal/database/seed.sql
 
 img/clear:
-	rm -f ./web/static/img/posts/full/* || true
-	rm -f ./web/static/img/posts/thumb/* || true
+	rm -rf ./web/static/img/posts || true

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"image"
 	"io"
 	"log"
 	"mime/multipart"
@@ -12,6 +13,7 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/disintegration/imaging"
 	"github.com/dominicf2001/comfychan/internal/database"
 	"github.com/dominicf2001/comfychan/web/views"
 	"github.com/go-chi/chi/v5"
@@ -26,21 +28,16 @@ const POST_IMG_THUMB_PATH = "web/static/img/posts/thumb"
 
 var dev = true
 
-func disableCacheInDevMode(next http.Handler) http.Handler {
-	if !dev {
-		return next
-	}
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Cache-Control", "no-store")
-		next.ServeHTTP(w, r)
-	})
-}
-
 func savePostFile(file *multipart.File, header *multipart.FileHeader) error {
 	dstPathFull := filepath.Join(POST_IMG_FULL_PATH, header.Filename)
 	dstPathThumb := filepath.Join(POST_IMG_THUMB_PATH, header.Filename)
 
-	// save full
+	// FULL
+	if err := os.MkdirAll(POST_IMG_FULL_PATH, 0755); err != nil {
+		log.Printf("MkdirAll (full): %v", err)
+		return err
+	}
+
 	dstFull, err := os.Create(dstPathFull)
 	if err != nil {
 		log.Printf("os.Create (full): %v", err)
@@ -57,19 +54,35 @@ func savePostFile(file *multipart.File, header *multipart.FileHeader) error {
 		return err
 	}
 
-	// save thumbnail
-	dstThumb, err := os.Create(dstPathThumb)
-	if err != nil {
-		log.Printf("os.Create (thumb): %v", err)
+	// THUMBNAIL
+	if err := os.MkdirAll(POST_IMG_THUMB_PATH, 0755); err != nil {
+		log.Printf("MkdirAll (thumb): %v", err)
 		return err
 	}
-	defer dstThumb.Close()
-	if _, err := io.Copy(dstThumb, *file); err != nil {
-		log.Printf("io.Copy (thumb): %v", err)
+
+	img, _, err := image.Decode(*file)
+	if err != nil {
+		log.Printf("image.Decode: %v", err)
+		return err
+	}
+
+	thumb := imaging.Resize(img, 200, 0, imaging.Lanczos)
+	if err = imaging.Save(thumb, dstPathThumb); err != nil {
+		log.Printf("imaging.Save: %v", err)
 		return err
 	}
 
 	return nil
+}
+
+func disableCacheInDevMode(next http.Handler) http.Handler {
+	if !dev {
+		return next
+	}
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-store")
+		next.ServeHTTP(w, r)
+	})
 }
 
 func main() {
