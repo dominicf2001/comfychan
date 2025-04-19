@@ -79,6 +79,7 @@ body {
 }
 
 .catalog-preview-link {
+    text-decoration: none;
     cursor: pointer;
 }
 

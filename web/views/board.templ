@@ -76,7 +76,9 @@ templ ThreadsCatalog(previews []CatalogThreadPreview) {
 				<a href={ templ.URL(preview.ThreadURL) }>
 					<img class="catalog-preview-img" src={ fmt.Sprintf("/static/img/posts/%s", preview.MediaPath) }/>
 				</a>
-				<h1><a href={ templ.URL(preview.ThreadURL) } class="catalog-preview-link">{ preview.Subject }</a></h1>
+				<h1>
+					<a href={ templ.URL(preview.ThreadURL) } class="thread-subject catalog-preview-link">{ preview.Subject }</a>
+				</h1>
 				<p>
 					@templ.Raw(util.EnrichPost(preview.Body))
 				</p>
