@@ -8,31 +8,22 @@ import (
 	"strconv"
 )
 
-func getPostClass(isOp bool) string {
-	if isOp {
-		return "post-op"
-	}
-	return "post"
-}
-
-templ ThreadPost(post database.Post, thread *database.Thread) {
-	{{ isOp := thread != nil }}
-	<article id={ fmt.Sprintf("post-%d", post.Id) } class={ getPostClass(isOp) }>
-		if post.MediaPath != "" {
-			<div class="post-img-container">
-				<img
-					onclick="togglePostImage(this)"
-					loading="lazy"
-					src={ fmt.Sprintf("/static/img/posts/thumb/%s",
-			post.MediaPath) }
-					class="post-img"
-				/>
-			</div>
-		}
+templ PostOriginal(post database.Post, thread *database.Thread) {
+	<article id={ fmt.Sprintf("post-%d", post.Id) } class="post-op">
+		<div>
+			File:
+			<a href={ templ.URL("/static/img/posts/full/" + post.MediaPath) } class="post-filename">
+				{ post.MediaPath }
+			</a>
+		</div>
+		<img
+			onclick="togglePostImage(this)"
+			loading="lazy"
+			src={ fmt.Sprintf("/static/img/posts/thumb/%s", post.MediaPath) }
+			class="post-img"
+		/>
 		<header class="post-header">
-			if isOp && thread.Subject != "" {
-				<h1 class="thread-subject">{ thread.Subject } -</h1>
-			}
+			<h1 class="thread-subject">{ thread.Subject } -</h1>
 			<span class="post-author">{ post.Author }</span>
 			<span class="post-date">{ post.CreatedAt.Format("01/02/2006") }</span>
 			<span class="post-time">{ post.CreatedAt.Format("15:04") }</span>
@@ -42,17 +33,54 @@ templ ThreadPost(post database.Post, thread *database.Thread) {
 			>
 				No.{ strconv.Itoa(post.Id) }
 			</span>
-			<div class="post-replies"></div>
+			<span class="post-replies"></span>
 		</header>
-		<p>
+		<p class="post-body">
 			@templ.Raw(util.EnrichPost(post.Body))
 		</p>
 	</article>
 }
 
-templ ThreadPosts(posts []database.Post) {
+templ PostReply(post database.Post) {
+	<article id={ fmt.Sprintf("post-%d", post.Id) } class="post">
+		<header class="post-header">
+			<span class="post-author">{ post.Author }</span>
+			<span class="post-date">{ post.CreatedAt.Format("01/02/2006") }</span>
+			<span class="post-time">{ post.CreatedAt.Format("15:04") }</span>
+			<span
+				_={ fmt.Sprintf("on click set #newPostBody.value to #newPostBody.value + '>>%d\n'", post.Id) }
+				class=" post-num"
+			>
+				No.{ strconv.Itoa(post.Id) }
+			</span>
+			<span class="post-replies"></span>
+		</header>
+		if post.MediaPath != "" {
+			<div>
+				<div style="margin-bottom: 2px;">
+					File:
+					<a href={ templ.URL("/static/img/posts/full/" + post.MediaPath) } class="post-filename">
+						{ post.MediaPath }
+					</a>
+				</div>
+				<img
+					onclick="togglePostImage(this)"
+					loading="lazy"
+					src={ fmt.Sprintf("/static/img/posts/thumb/%s",
+			post.MediaPath) }
+					class="post-img"
+				/>
+			</div>
+		}
+		<p class="post-body">
+			@templ.Raw(util.EnrichPost(post.Body))
+		</p>
+	</article>
+}
+
+templ PostReplies(posts []database.Post) {
 	for _, post := range (posts) {
-		@ThreadPost(post, nil)
+		@PostReply(post)
 		<br/>
 	}
 }
@@ -97,13 +125,13 @@ templ Thread(board database.Board, thread database.Thread, posts []database.Post
 			</form>
 		</div>
 		<div class="thread">
-			@ThreadPost(posts[0], &thread)
+			@PostOriginal(posts[0], &thread)
 			<div
 				hx-get={ fmt.Sprintf("/hx/%s/threads/%d/posts", board.Slug, thread.Id) }
 				hx-trigger="refreshPosts from:body"
 				_="on htmx:afterSwap call insertHeaderReplies()"
 			>
-				@ThreadPosts(posts[1:])
+				@PostReplies(posts[1:])
 			</div>
 		</div>
 	}

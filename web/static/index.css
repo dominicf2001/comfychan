@@ -175,6 +175,7 @@ body {
 }
 
 .post-header {
+    clear: none;
     margin-bottom: 10px;
 }
 
@@ -186,19 +187,20 @@ body {
     color: #13A82A;
 }
 
-.post-img-container {
+.post-img {
+    display: block;
     float: left;
     margin: 4px 12px 4px 0;
-}
-
-.post-img {
     cursor: pointer;
     height: auto;
     max-width: 100%;
 }
 
 .post-body {
-    overflow-wrap: break-word;
+    margin-top: 10px;
+    margin-left: 5px;
+    clear: none;
+    word-wrap: break-word;
     line-height: 1.3;
 }
 
@@ -209,6 +211,12 @@ body {
 
 .greentext {
     color: #789922
+}
+
+.post-filename {
+    color: rgb(52, 52, 92);
+    text-decoration: underline;
+    cursor: pointer;
 }
 
 .reply-link {

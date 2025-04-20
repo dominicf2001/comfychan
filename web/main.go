@@ -277,7 +277,7 @@ func main() {
 		}
 
 		// dont pass the op post. only replies
-		views.ThreadPosts(posts[1:]).Render(r.Context(), w)
+		views.PostReplies(posts[1:]).Render(r.Context(), w)
 	})
 
 	// -----------------
