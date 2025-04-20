@@ -8,6 +8,9 @@ import (
 )
 
 templ NewThreadForm(board database.Board) {
+	<div style="display: none;" id="newPostWarning" class="warning">
+		<p>Please wait until the 2 minute cooldown is finished.</p>
+	</div>
 	<form
 		hx-encoding="multipart/form-data"
 		style="display: none;"
@@ -15,17 +18,23 @@ templ NewThreadForm(board database.Board) {
 		hx-swap="none"
 		hx-post={ fmt.Sprintf("/%s/threads", board.Slug) }
 		_="on htmx:afterRequest 
-		hide me 
-		then show #newThreadBtn 
-		then set #newPostBody.value to '' 
-		then set #newPostFile.value to '' 
-		then trigger refreshThreads on body"
+		if event.detail.xhr.status is not 429
+			hide me 
+			then show #newThreadBtn 
+			then set #newPostBody.value to '' 
+			then set #newPostFile.value to '' 
+			then set #newPostSubject.value to '' 
+			then hide #newPostWarning
+			then trigger refreshThreads on body
+		else
+			show #newPostWarning
+		end"
 	>
 		<table>
 			<tbody>
 				<tr class="new-post-form-field">
 					<th>Subject</th>
-					<td><input name="subject"/></td>
+					<td><input id="newPostSubject" name="subject"/></td>
 				</tr>
 				<tr class="new-post-form-field">
 					<th>Comment</th>
@@ -82,7 +91,7 @@ templ ThreadsCatalog(previews []CatalogThreadPreview) {
 					/>
 				</a>
 				<h1>
-					<a href={ templ.URL(preview.ThreadURL) } class="thread-subject catalog-preview-link">{ preview.Subject }</a>
+					<a href={ templ.URL(preview.ThreadURL) } class="catalog-preview-link">{ preview.Subject }</a>
 				</h1>
 				<p>
 					@templ.Raw(util.EnrichPost(preview.Body))

@@ -62,6 +62,9 @@ templ Thread(board database.Board, thread database.Thread, posts []database.Post
 		<script src="/static/thread.js" defer></script>
 		@BoardHeader(board)
 		<div class="new-post-container">
+			<div style="display: none;" id="newPostWarning" class="warning">
+				<p>Please wait until the 15 second cooldown is finished.</p>
+			</div>
 			<form
 				hx-encoding="multipart/form-data"
 				id="newPostForm"
@@ -69,9 +72,14 @@ templ Thread(board database.Board, thread database.Thread, posts []database.Post
 				hx-post={ fmt.Sprintf("/%s/threads/%d",
 		board.Slug, thread.Id) }
 				_="on htmx:afterRequest 
-			set #newPostBody.value to ''
-			then set #newPostFile.value to ''
-			then trigger refreshPosts on body"
+					if event.detail.xhr.status is not 429
+						set #newPostBody.value to '' 
+						then set #newPostFile.value to '' 
+						then hide #newPostWarning
+						then trigger refreshPosts on body
+					else
+						show #newPostWarning
+					end"
 			>
 				<table>
 					<tbody>
