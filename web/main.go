@@ -282,6 +282,28 @@ func main() {
 
 	// -----------------
 
+	// -----------------
+	// CLEANUP
+	// -----------------
+
+	go func() {
+		for range time.Tick(10 * time.Minute) {
+			for ip, cooldown := range util.PostCooldowns {
+				if time.Since(cooldown) >= util.POST_COOLDOWN {
+					delete(util.PostCooldowns, ip)
+				}
+			}
+
+			for ip, cooldown := range util.ThreadCooldowns {
+				if time.Since(cooldown) >= util.THREAD_COOLDOWN {
+					delete(util.ThreadCooldowns, ip)
+				}
+			}
+		}
+	}()
+
+	// -----------------
+
 	fmt.Println("Listening on :8080")
 	http.ListenAndServe(":8080", r)
 }
