@@ -176,7 +176,11 @@ func PutPost(db Queryer, boardSlug string, threadId int, body string, mediaPath 
 	_, err := db.Exec(`
 		INSERT INTO posts (thread_id, body, media_path, ip_hash, number) 
 		VALUES (?, ?, ?, ?, ?)`, threadId, body, mediaPath, ip_hash, newPostNumber)
+	if err != nil {
+		return err
+	}
 
+	_, err = db.Exec(`UPDATE threads SET bumped_at = CURRENT_TIMESTAMP where id = ?`, threadId)
 	if err != nil {
 		return err
 	}
