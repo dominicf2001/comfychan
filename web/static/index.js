@@ -55,3 +55,20 @@ function highlightPost(postId, e, status = true) {
         }
     }
 }
+
+function resizeCatalogPreviewImgs() {
+    const value = $("selectSortBy").value;
+    const postsImages = Array.from(document.querySelectorAll(".catalog-preview img"));
+    for (const postImage of postsImages) {
+        switch (value) {
+            case "small":
+                postImage.classList.remove("catalog-preview-img-large")
+                postImage.classList.add("catalog-preview-img-small")
+                break;
+            case "large":
+                postImage.classList.remove("catalog-preview-img-small")
+                postImage.classList.add("catalog-preview-img-large")
+                break;
+        }
+    }
+}

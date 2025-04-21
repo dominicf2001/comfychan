@@ -109,7 +109,7 @@ templ Thread(board database.Board, thread database.Thread, posts []database.Post
 	</form>
 </div>
 <hr />
-<div style="margin-left: 25px;" class="link-button-container">
+<div style="margin-left: 25px;">
 	<a href={ templ.URL("/" + thread.BoardSlug) } style="margin-right: 5px;" class="link-button">[Catalog]</a>
 	<a _="on click trigger refreshPosts on body" class="link-button">[Refresh]</a>
 </div>

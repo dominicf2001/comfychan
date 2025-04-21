@@ -68,7 +68,20 @@ templ Board(board database.Board) {
 			<button _="on click hide me then show #newThreadForm" id="newThreadBtn">[New Thread]</button>
 			@NewThreadForm(board)
 		</div>
-		<div hx-get={ fmt.Sprintf("/hx/%s/catalog", board.Slug) } hx-trigger="load, refreshThreads from:body"></div>
+		<hr/>
+		<div id="boardActionBar">
+			<span>Image size: </span>
+			<select onchange="resizeCatalogPreviewImgs()" id="selectSortBy">
+				<option selected value="small">Small</option>
+				<option value="large">Large</option>
+			</select>
+		</div>
+		<hr/>
+		<div
+			hx-get={ fmt.Sprintf("/hx/%s/catalog", board.Slug) }
+			hx-trigger="load, refreshThreads from:body"
+			_="on htmx:afterRequest call resizeCatalogPreviewImgs()"
+		></div>
 	}
 }
 
