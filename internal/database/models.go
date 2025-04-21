@@ -25,4 +25,5 @@ type Post struct {
 	CreatedAt time.Time
 	MediaPath string
 	IpHash    string
+	Number    int
 }

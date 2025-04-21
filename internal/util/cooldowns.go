@@ -17,8 +17,11 @@ var (
 
 var CooldownMutex sync.Mutex
 
-const POST_COOLDOWN = 15 * time.Second
-const THREAD_COOLDOWN = 2 * time.Minute
+// const POST_COOLDOWN = 15 * time.Second
+const POST_COOLDOWN = 0 * time.Second
+
+// const THREAD_COOLDOWN = 2 * time.Minute
+const THREAD_COOLDOWN = 0 * time.Minute
 
 func IsOnCooldown(ip string, m map[string]time.Time, duration time.Duration) bool {
 	CooldownMutex.Lock()

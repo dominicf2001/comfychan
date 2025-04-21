@@ -78,7 +78,6 @@ func main() {
 	// THREAD PAGE
 	r.Get("/{slug}/threads/{threadId}", func(w http.ResponseWriter, r *http.Request) {
 		slug := chi.URLParam(r, "slug")
-		// TODO: use relative thread_nums (see issue #1)
 		threadIdStr := chi.URLParam(r, "threadId")
 		threadId, err := strconv.Atoi(threadIdStr)
 		if err != nil {
@@ -165,8 +164,7 @@ func main() {
 			return
 		}
 
-		// slug := chi.URLParam(r, "slug")
-		// TODO: use relative thread_nums (see issue #1)
+		slug := chi.URLParam(r, "slug")
 		threadIdStr := chi.URLParam(r, "threadId")
 		threadId, err := strconv.Atoi(threadIdStr)
 		if err != nil {
@@ -201,7 +199,7 @@ func main() {
 			mediaPath = filename
 		}
 
-		if err := database.PutPost(db, threadId, body, mediaPath, util.HashIp(ip)); err != nil {
+		if err := database.PutPost(db, slug, threadId, body, mediaPath, util.HashIp(ip)); err != nil {
 			http.Error(w, "Failed to create post", http.StatusInternalServerError)
 			log.Printf("PutPost: %v", err)
 			return
@@ -256,7 +254,6 @@ func main() {
 	// THREAD POSTS
 	r.Get("/hx/{slug}/threads/{threadId}/posts", func(w http.ResponseWriter, r *http.Request) {
 		// slug := chi.URLParam(r, "slug")
-		// TODO: use relative thread_nums (see issue #1)
 		threadIdStr := chi.URLParam(r, "threadId")
 		threadId, err := strconv.Atoi(threadIdStr)
 		if err != nil {

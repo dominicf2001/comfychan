@@ -10,7 +10,7 @@ import (
 
 templ PostOriginal(post database.Post, thread *database.Thread) {
 {{ imgInfo := util.GetPostImageInfo(post.MediaPath) }}
-<article id={ fmt.Sprintf("post-%d", post.Id) } class="post-op">
+<article id={ fmt.Sprintf("post-%d", post.Number) } class="post-op">
 	<div>
 		File:
 		<a href={ templ.URL("/static/img/posts/full/" + post.MediaPath) } class="post-filename">
@@ -28,9 +28,9 @@ templ PostOriginal(post database.Post, thread *database.Thread) {
 		<span class="post-author">{ post.Author }</span>
 		<span class="post-date">{ post.CreatedAt.Format("01/02/2006") }</span>
 		<span class="post-time">{ post.CreatedAt.Format("15:04") }</span>
-		<span _={ fmt.Sprintf("on click set #newPostBody.value to #newPostBody.value + '>>%d\n'", post.Id) }
+		<span _={ fmt.Sprintf("on click set #newPostBody.value to #newPostBody.value + '>>%d\n'", post.Number) }
 				class=" post-num">
-			No.{ strconv.Itoa(post.Id) }
+			No.{ strconv.Itoa(post.Number) }
 		</span>
 		<span class="post-replies"></span>
 	</header>
@@ -42,14 +42,14 @@ templ PostOriginal(post database.Post, thread *database.Thread) {
 
 templ PostReply(post database.Post) {
 {{ imgInfo := util.GetPostImageInfo(post.MediaPath) }}
-<article id={ fmt.Sprintf("post-%d", post.Id) } class="post">
+<article id={ fmt.Sprintf("post-%d", post.Number) } class="post">
 	<header class="post-header">
 		<span class="post-author">{ post.Author }</span>
 		<span class="post-date">{ post.CreatedAt.Format("01/02/2006") }</span>
 		<span class="post-time">{ post.CreatedAt.Format("15:04") }</span>
-		<span _={ fmt.Sprintf("on click set #newPostBody.value to #newPostBody.value + '>>%d\n'", post.Id) }
+		<span _={ fmt.Sprintf("on click set #newPostBody.value to #newPostBody.value + '>>%d\n'", post.Number) }
 				class=" post-num">
-			No.{ strconv.Itoa(post.Id) }
+			No.{ strconv.Itoa(post.Number) }
 		</span>
 		<span class="post-replies"></span>
 	</header>
