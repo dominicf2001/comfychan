@@ -47,7 +47,6 @@ templ PostOriginal(post database.Post, thread *database.Thread) {
 }
 
 templ PostReply(post database.Post) {
-	{{ imgInfo := util.GetPostImageInfo(post.MediaPath) }}
 	<article id={ fmt.Sprintf("post-%d", post.Number) } class="post">
 		<header class="post-header">
 			<span class="post-author">{ post.Author }</span>
@@ -62,6 +61,7 @@ templ PostReply(post database.Post) {
 			<span class="post-replies"></span>
 		</header>
 		if post.MediaPath != "" {
+			{{ imgInfo := util.GetPostImageInfo(post.MediaPath) }}
 			<div>
 				<div style="margin-bottom: 2px;">
 					File:
