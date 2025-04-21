@@ -264,6 +264,13 @@ func main() {
 			return
 		}
 
+		thread, err := database.GetThread(db, threadId)
+		if err != nil {
+			http.Error(w, "Failed to get thread", http.StatusBadRequest)
+			log.Printf("GetThread: %v", err)
+			return
+		}
+
 		posts, err := database.GetPosts(db, threadId)
 		if err != nil {
 			http.Error(w, "Failed to get posts", http.StatusBadRequest)
@@ -278,7 +285,7 @@ func main() {
 		}
 
 		// dont pass the op post. only replies
-		views.PostReplies(posts[1:]).Render(r.Context(), w)
+		views.Posts(posts, thread).Render(r.Context(), w)
 	})
 
 	// -----------------
@@ -289,6 +296,8 @@ func main() {
 
 	go func() {
 		for range time.Tick(10 * time.Minute) {
+			util.CooldownMutex.Lock()
+			defer util.CooldownMutex.Unlock()
 			for ip, cooldown := range util.PostCooldowns {
 				if time.Since(cooldown) >= util.POST_COOLDOWN {
 					delete(util.PostCooldowns, ip)

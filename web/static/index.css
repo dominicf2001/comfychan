@@ -1,5 +1,8 @@
 body {
     background: #EEF2FF;
+    padding-left: 4px;
+    padding-right: 4px;
+    margin: 0 4px;
 }
 
 /* INDEX */
@@ -273,4 +276,29 @@ body {
     padding: 8px;
     margin: 5px 0;
     font-size: 12px;
+}
+
+.link-button {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: .8rem;
+    color: #34345C;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.link-button:hover {
+    color: #ff0000;
+}
+
+hr {
+    border: none;
+    border-top-width: medium;
+    border-top-style: none;
+    border-top-color: currentcolor;
+    border-top:
+        1px solid #B7C5D9;
+    height: 0;
+    clear: left;
 }

@@ -15,14 +15,14 @@ var (
 	ThreadCooldowns = make(map[string]time.Time)
 )
 
-var cooldownMutex sync.Mutex
+var CooldownMutex sync.Mutex
 
 const POST_COOLDOWN = 15 * time.Second
 const THREAD_COOLDOWN = 2 * time.Minute
 
 func IsOnCooldown(ip string, m map[string]time.Time, duration time.Duration) bool {
-	cooldownMutex.Lock()
-	defer cooldownMutex.Unlock()
+	CooldownMutex.Lock()
+	defer CooldownMutex.Unlock()
 
 	last, exists := m[ip]
 	if !exists || time.Since(last) >= duration {
