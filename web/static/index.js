@@ -72,3 +72,21 @@ function resizeCatalogPreviewImgs() {
         }
     }
 }
+
+function applyCatalogSearch() {
+    const searchText = $("catalogSearch").value.toLowerCase();
+
+    const posts = Array.from(document.querySelectorAll(".catalog-preview"));
+    for (const post of posts) {
+        const headerContent = post.querySelector("h1 a").textContent;
+        const bodyContent = post.querySelector("p").textContent;
+
+        const contentToSearch = (headerContent + "\n" + bodyContent).toLowerCase();
+        if (contentToSearch.search(searchText) === -1) {
+            post.style.display = "none";
+        }
+        else {
+            post.style.display = "";
+        }
+    }
+}

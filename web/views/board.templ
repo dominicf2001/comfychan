@@ -75,12 +75,15 @@ templ Board(board database.Board) {
 				<option selected value="small">Small</option>
 				<option value="large">Large</option>
 			</select>
+			<input oninput="applyCatalogSearch()" id="catalogSearch" style="float: right;" placeholder="Search"/>
 		</div>
 		<hr/>
 		<div
 			hx-get={ fmt.Sprintf("/hx/%s/catalog", board.Slug) }
 			hx-trigger="load, refreshThreads from:body"
-			_="on htmx:afterRequest call resizeCatalogPreviewImgs()"
+			_="on htmx:afterRequest 
+				call resizeCatalogPreviewImgs()
+				then call applyCatalogSearch()"
 		></div>
 	}
 }
