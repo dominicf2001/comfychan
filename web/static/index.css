@@ -216,6 +216,12 @@ body {
     max-width: 100%;
 }
 
+.post-img-info {
+    display: inline-block;
+    font-size: 10px;
+    margin-left: 5px;
+}
+
 .post-body {
     margin-top: 10px;
     margin-left: 5px;
@@ -253,7 +259,7 @@ body {
     color: rgb(52, 52, 92);
     text-decoration: underline;
     cursor: pointer;
-    margin-left: 8px;
+    margin-left: 4px;
 }
 
 .reply-link-header:hover {
