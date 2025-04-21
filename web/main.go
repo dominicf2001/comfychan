@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/dominicf2001/comfychan/internal/database"
@@ -125,6 +126,7 @@ func main() {
 
 	// CREATE THREAD
 	r.Post("/{slug}/threads", func(w http.ResponseWriter, r *http.Request) {
+		slug := chi.URLParam(r, "slug")
 		ip := util.GetIP(r)
 
 		timeRemaining := util.IsOnCooldown(ip, util.ThreadCooldowns, util.THREAD_COOLDOWN)
@@ -135,16 +137,14 @@ func main() {
 			return
 		}
 
-		slug := chi.URLParam(r, "slug")
-
-		subject := r.FormValue("subject")
-		body := r.FormValue("body")
-
 		if err := r.ParseMultipartForm(util.FILE_MEM_LIMIT); err != nil {
 			http.Error(w, "Failed to parse form", http.StatusBadRequest)
 			log.Printf("ParseMultipartForm: %v", err)
 			return
 		}
+
+		subject := r.FormValue("subject")
+		body := strings.TrimSpace(r.FormValue("body"))
 
 		file, header, err := r.FormFile("file")
 		if err != nil {
@@ -170,17 +170,16 @@ func main() {
 
 	// CREATE POST
 	r.Post("/{slug}/threads/{threadId}", func(w http.ResponseWriter, r *http.Request) {
+		slug := chi.URLParam(r, "slug")
 		ip := util.GetIP(r)
 
 		timeRemaining := util.IsOnCooldown(ip, util.PostCooldowns, util.POST_COOLDOWN)
 		if timeRemaining > 0 {
 			response := fmt.Sprintf("Please wait %.0f seconds.", timeRemaining.Seconds())
-
 			http.Error(w, response, http.StatusTooManyRequests)
 			return
 		}
 
-		slug := chi.URLParam(r, "slug")
 		threadIdStr := chi.URLParam(r, "threadId")
 		threadId, err := strconv.Atoi(threadIdStr)
 		if err != nil {
@@ -188,12 +187,17 @@ func main() {
 			return
 		}
 
-		body := r.FormValue("body")
-		mediaPath := ""
-
 		if err := r.ParseMultipartForm(util.FILE_MEM_LIMIT); err != nil {
 			http.Error(w, "Failed to parse form", http.StatusBadRequest)
 			log.Printf("ParseMultipartForm: %v", err)
+			return
+		}
+
+		body := strings.TrimSpace(r.FormValue("body"))
+		mediaPath := ""
+
+		if body == "" {
+			http.Error(w, "Malformed post body", http.StatusBadRequest)
 			return
 		}
 
