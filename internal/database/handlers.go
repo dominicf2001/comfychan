@@ -5,7 +5,10 @@ import (
 )
 
 func GetBoards(db *sql.DB) ([]Board, error) {
-	rows, err := db.Query(`select id, name, slug, tag from boards order by slug`)
+	rows, err := db.Query(`
+		SELECT id, name, slug, tag 
+		FROM boards ORDER BY slug`)
+
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +28,10 @@ func GetBoards(db *sql.DB) ([]Board, error) {
 }
 
 func GetBoard(db *sql.DB, slug string) (Board, error) {
-	row := db.QueryRow(`SELECT id, name, slug, tag FROM boards WHERE slug = ?`, slug)
+	row := db.QueryRow(`
+		SELECT id, name, slug, tag 
+		FROM boards 
+		WHERE slug = ?`, slug)
 
 	var result Board
 	err := row.Scan(&result.Id, &result.Name, &result.Slug, &result.Tag)
@@ -37,8 +43,11 @@ func GetBoard(db *sql.DB, slug string) (Board, error) {
 }
 
 func GetThreads(db *sql.DB, boardSlug string) ([]Thread, error) {
-	rows, err := db.Query(
-		`SELECT id, board_slug, subject, created_at, bumped_at FROM threads WHERE board_slug = ?`, boardSlug)
+	rows, err := db.Query(`
+		SELECT id, board_slug, subject, created_at, bumped_at 
+		FROM threads 
+		WHERE board_slug = ?`, boardSlug)
+
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +67,10 @@ func GetThreads(db *sql.DB, boardSlug string) ([]Thread, error) {
 }
 
 func GetThread(db *sql.DB, threadId int) (Thread, error) {
-	row := db.QueryRow(`SELECT id, board_slug, subject, created_at, bumped_at FROM threads WHERE id = ?`, threadId)
+	row := db.QueryRow(`
+		SELECT id, board_slug, subject, created_at, bumped_at 
+		FROM threads 
+		WHERE id = ?`, threadId)
 
 	var thread Thread
 	err := row.Scan(&thread.Id, &thread.BoardSlug, &thread.Subject, &thread.CreatedAt, &thread.BumpedAt)
@@ -70,7 +82,11 @@ func GetThread(db *sql.DB, threadId int) (Thread, error) {
 }
 
 func GetPosts(db *sql.DB, threadId int) ([]Post, error) {
-	rows, err := db.Query(`SELECT id, thread_id, author, body, created_at, media_path FROM posts WHERE thread_id = ?`, threadId)
+	rows, err := db.Query(`
+		SELECT id, thread_id, author, body, created_at, media_path, ip_hash 
+		FROM posts 
+		WHERE thread_id = ?`, threadId)
+
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +95,7 @@ func GetPosts(db *sql.DB, threadId int) ([]Post, error) {
 	var result []Post
 	for rows.Next() {
 		var p Post
-		err := rows.Scan(&p.Id, &p.ThreadId, &p.Author, &p.Body, &p.CreatedAt, &p.MediaPath)
+		err := rows.Scan(&p.Id, &p.ThreadId, &p.Author, &p.Body, &p.CreatedAt, &p.MediaPath, &p.IpHash)
 		if err != nil {
 			return nil, err
 		}
@@ -90,27 +106,31 @@ func GetPosts(db *sql.DB, threadId int) ([]Post, error) {
 }
 
 func GetOriginalPost(db *sql.DB, threadId int) (Post, error) {
-	row := db.QueryRow(`SELECT id, thread_id, author, body, created_at, media_path 
+	row := db.QueryRow(`
+		SELECT id, thread_id, author, body, created_at, media_path, ip_hash
 		FROM posts 
 		WHERE thread_id = ? 
 		ORDER BY created_at ASC LIMIT 1`, threadId)
 
-	var result Post
-	err := row.Scan(&result.Id, &result.ThreadId, &result.Author, &result.Body, &result.CreatedAt, &result.MediaPath)
+	var r Post
+	err := row.Scan(&r.Id, &r.ThreadId, &r.Author, &r.Body, &r.CreatedAt, &r.MediaPath, &r.IpHash)
 	if err != nil {
 		return Post{}, err
 	}
-	return result, row.Err()
+	return r, row.Err()
 }
 
-func PutThread(db *sql.DB, boardSlug string, subject string, body string, mediaPath string) error {
+func PutThread(db *sql.DB, boardSlug string, subject string, body string, mediaPath string, ip_hash string) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
 
-	res, err := tx.Exec(`INSERT INTO threads (board_slug, subject) VALUES (?, ?) RETURNING id`, boardSlug, subject)
+	res, err := tx.Exec(`
+		INSERT INTO threads (board_slug, subject) 
+		VALUES (?, ?) RETURNING id`, boardSlug, subject)
+
 	if err != nil {
 		return err
 	}
@@ -120,7 +140,10 @@ func PutThread(db *sql.DB, boardSlug string, subject string, body string, mediaP
 		return err
 	}
 
-	_, err = tx.Exec(`INSERT INTO posts (thread_id, body, media_path) VALUES (?, ?, ?)`, threadId, body, mediaPath)
+	_, err = tx.Exec(`
+		INSERT INTO posts (thread_id, body, media_path, ip_hash) 
+		VALUES (?, ?, ?, ?)`, threadId, body, mediaPath, ip_hash)
+
 	if err != nil {
 		return err
 	}
@@ -132,8 +155,11 @@ func PutThread(db *sql.DB, boardSlug string, subject string, body string, mediaP
 	return nil
 }
 
-func PutPost(db *sql.DB, threadId int, body string, mediaPath string) error {
-	_, err := db.Exec(`INSERT INTO posts (thread_id, body, media_path) VALUES (?, ?, ?)`, threadId, body, mediaPath)
+func PutPost(db *sql.DB, threadId int, body string, mediaPath string, ip_hash string) error {
+	_, err := db.Exec(`
+		INSERT INTO posts (thread_id, body, media_path, ip_hash) 
+		VALUES (?, ?, ?, ?)`, threadId, body, mediaPath, ip_hash)
+
 	if err != nil {
 		return err
 	}

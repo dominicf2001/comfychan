@@ -150,7 +150,7 @@ func main() {
 			return
 		}
 
-		if err := database.PutThread(db, slug, subject, body, filename); err != nil {
+		if err := database.PutThread(db, slug, subject, body, filename, util.HashIp(ip)); err != nil {
 			http.Error(w, "Failed to create thread", http.StatusInternalServerError)
 			log.Printf("PutThread: %v", err)
 			return
@@ -201,7 +201,7 @@ func main() {
 			mediaPath = filename
 		}
 
-		if err := database.PutPost(db, threadId, body, mediaPath); err != nil {
+		if err := database.PutPost(db, threadId, body, mediaPath, util.HashIp(ip)); err != nil {
 			http.Error(w, "Failed to create post", http.StatusInternalServerError)
 			log.Printf("PutPost: %v", err)
 			return
@@ -246,7 +246,7 @@ func main() {
 				ThreadURL:  fmt.Sprintf("/%s/threads/%d", slug, thread.Id),
 				MediaPath:  op.MediaPath,
 				ReplyCount: len(posts),
-				IpCount:    0, // TODO
+				IpCount:    util.SumUniquePostIps(posts),
 			})
 		}
 

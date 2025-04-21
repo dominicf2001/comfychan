@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS posts (
     body TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     media_path TEXT NOT NULL DEFAULT '',
+    ip_hash TEXT NOT NULL,
     FOREIGN KEY (thread_id) REFERENCES threads(id) ON DELETE CASCADE
 );
 

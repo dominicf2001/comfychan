@@ -1,6 +1,8 @@
 package util
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"net"
 	"net/http"
 	"strings"
@@ -42,4 +44,9 @@ func GetIP(r *http.Request) string {
 		return r.RemoteAddr
 	}
 	return ip
+}
+
+func HashIp(ip string) string {
+	checksum := sha256.Sum256([]byte(ip))
+	return hex.EncodeToString(checksum[:])
 }

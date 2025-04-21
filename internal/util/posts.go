@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/disintegration/imaging"
+	"github.com/dominicf2001/comfychan/internal/database"
 )
 
 // 10 MB memory limit
@@ -101,4 +102,12 @@ func SavePostFile(file *multipart.File, filename string) error {
 	}
 
 	return nil
+}
+
+func SumUniquePostIps(posts []database.Post) int {
+	uniqueIpHashes := map[string]bool{}
+	for _, post := range posts {
+		uniqueIpHashes[post.IpHash] = true
+	}
+	return len(uniqueIpHashes)
 }
