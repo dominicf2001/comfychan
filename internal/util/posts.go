@@ -13,13 +13,13 @@ import (
 	"strings"
 
 	"github.com/disintegration/imaging"
-	"github.com/dominicf2001/comfychan/internal/database"
 )
 
 // 10 MB memory limit
 const FILE_MEM_LIMIT int64 = 10 << 20
 const POST_IMG_FULL_PATH = "web/static/img/posts/full"
 const POST_IMG_THUMB_PATH = "web/static/img/posts/thumb"
+const MAX_THREAD_COUNT = 50
 
 func EnrichPost(body string) string {
 	var b strings.Builder
@@ -103,14 +103,6 @@ func SavePostFile(file *multipart.File, filename string) error {
 	}
 
 	return nil
-}
-
-func SumUniquePostIps(posts []database.Post) int {
-	uniqueIpHashes := map[string]bool{}
-	for _, post := range posts {
-		uniqueIpHashes[post.IpHash] = true
-	}
-	return len(uniqueIpHashes)
 }
 
 type PostImageInfo struct {

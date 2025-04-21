@@ -30,6 +30,14 @@ func disableCacheInDevMode(next http.Handler) http.Handler {
 	})
 }
 
+func SumUniquePostIps(posts []database.Post) int {
+	uniqueIpHashes := map[string]bool{}
+	for _, post := range posts {
+		uniqueIpHashes[post.IpHash] = true
+	}
+	return len(uniqueIpHashes)
+}
+
 func main() {
 	// -----------------
 	// SETUP
@@ -244,7 +252,7 @@ func main() {
 				ThreadURL:  fmt.Sprintf("/%s/threads/%d", slug, thread.Id),
 				MediaPath:  op.MediaPath,
 				ReplyCount: len(posts),
-				IpCount:    util.SumUniquePostIps(posts),
+				IpCount:    SumUniquePostIps(posts),
 			})
 		}
 

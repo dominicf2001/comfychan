@@ -2,10 +2,15 @@ package database
 
 import (
 	"database/sql"
+	"os"
+	"path"
+
+	"github.com/dominicf2001/comfychan/internal/util"
 )
 
 type Queryer interface {
 	Exec(query string, args ...any) (sql.Result, error)
+	Query(query string, args ...any) (*sql.Rows, error)
 	QueryRow(query string, args ...any) *sql.Row
 }
 
@@ -149,6 +154,33 @@ func PutThread(db *sql.DB, boardSlug string, subject string, body string, mediaP
 		return err
 	}
 
+	row := tx.QueryRow("SELECT COUNT(*) FROM threads WHERE board_slug = ?", boardSlug)
+
+	var threadCount int
+	if err = row.Scan(&threadCount); err != nil {
+		return err
+	}
+
+	if threadCount > util.MAX_THREAD_COUNT {
+		row := tx.QueryRow(`
+			SELECT id FROM threads
+			WHERE id = (
+				SELECT id FROM threads
+				WHERE board_slug = ?
+				ORDER BY bumped_at ASC
+				LIMIT 1)`, boardSlug)
+
+		var pruneThreadId int
+		err := row.Scan(&pruneThreadId)
+		if err != nil {
+			return err
+		}
+
+		if err := DeleteThread(tx, pruneThreadId); err != nil {
+			return err
+		}
+	}
+
 	if err = tx.Commit(); err != nil {
 		return err
 	}
@@ -181,6 +213,46 @@ func PutPost(db Queryer, boardSlug string, threadId int, body string, mediaPath 
 	}
 
 	_, err = db.Exec(`UPDATE threads SET bumped_at = CURRENT_TIMESTAMP where id = ?`, threadId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func DeleteThread(db Queryer, threadId int) error {
+	// cleanup images
+	rows, err := db.Query(`
+		SELECT media_path 
+		FROM posts
+		WHERE thread_id = ?`, threadId)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	var pruneMediaPaths []string
+	for rows.Next() {
+		var pruneMediaPath string
+		if err := rows.Scan(&pruneMediaPath); err != nil {
+			return err
+		}
+		pruneMediaPaths = append(pruneMediaPaths, pruneMediaPath)
+	}
+
+	for _, pruneMediaPath := range pruneMediaPaths {
+		if err := os.Remove(path.Join(util.POST_IMG_FULL_PATH, pruneMediaPath)); err != nil && !os.IsNotExist(err) {
+			return err
+		}
+		if err := os.Remove(path.Join(util.POST_IMG_THUMB_PATH, pruneMediaPath)); err != nil && !os.IsNotExist(err) {
+			return err
+		}
+	}
+
+	// delete thread
+	_, err = db.Exec(`
+		DELETE FROM threads
+		WHERE id = ?`, threadId)
 	if err != nil {
 		return err
 	}
