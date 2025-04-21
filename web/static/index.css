@@ -128,6 +128,10 @@ body {
     color: #ff0000
 }
 
+#newPostForm table {
+    margin: auto;
+}
+
 #newPostForm button,
 #newThreadForm button {
     display: block;

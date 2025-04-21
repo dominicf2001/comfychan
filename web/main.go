@@ -126,8 +126,12 @@ func main() {
 	// CREATE THREAD
 	r.Post("/{slug}/threads", func(w http.ResponseWriter, r *http.Request) {
 		ip := util.GetIP(r)
-		if util.IsOnCooldown(ip, util.ThreadCooldowns, util.THREAD_COOLDOWN) {
-			http.Error(w, "Too many posts at once.", http.StatusTooManyRequests)
+
+		timeRemaining := util.IsOnCooldown(ip, util.ThreadCooldowns, util.THREAD_COOLDOWN)
+		if timeRemaining > 0 {
+			response := fmt.Sprintf("Please wait %.0f seconds.", timeRemaining.Seconds())
+
+			http.Error(w, response, http.StatusTooManyRequests)
 			return
 		}
 
@@ -167,8 +171,12 @@ func main() {
 	// CREATE POST
 	r.Post("/{slug}/threads/{threadId}", func(w http.ResponseWriter, r *http.Request) {
 		ip := util.GetIP(r)
-		if util.IsOnCooldown(ip, util.PostCooldowns, util.POST_COOLDOWN) {
-			http.Error(w, "Too many posts at once.", http.StatusTooManyRequests)
+
+		timeRemaining := util.IsOnCooldown(ip, util.PostCooldowns, util.POST_COOLDOWN)
+		if timeRemaining > 0 {
+			response := fmt.Sprintf("Please wait %.0f seconds.", timeRemaining.Seconds())
+
+			http.Error(w, response, http.StatusTooManyRequests)
 			return
 		}
 
