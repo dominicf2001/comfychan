@@ -5,6 +5,7 @@ import (
 	"github.com/dominicf2001/comfychan/internal/database"
 	"github.com/dominicf2001/comfychan/internal/util"
 	"github.com/dominicf2001/comfychan/web/views/shared"
+	"strconv"
 )
 
 templ NewThreadForm(board database.Board) {
@@ -72,15 +73,19 @@ templ Board(board database.Board) {
 }
 
 type CatalogThreadPreview struct {
-	Subject   string
-	Body      string
-	ThreadURL string
-	MediaPath string
+	Subject    string
+	Body       string
+	ThreadURL  string
+	MediaPath  string
+	ReplyCount int
+	IpCount    int
 }
 
 templ ThreadsCatalog(previews []CatalogThreadPreview) {
 	<div id="catalog">
 		for _, preview := range previews {
+			{{ replyCount := strconv.FormatInt(int64(preview.ReplyCount), 10) }}
+			{{ ipCount := strconv.FormatInt(int64(preview.IpCount), 10) }}
 			<div class="catalog-preview">
 				<a href={ templ.URL(preview.ThreadURL) }>
 					<img
@@ -90,6 +95,7 @@ templ ThreadsCatalog(previews []CatalogThreadPreview) {
 				preview.MediaPath) }
 					/>
 				</a>
+				<strong class="catalog-preview-counts">R: { replyCount } / I: { ipCount }</strong>
 				<h1>
 					<a href={ templ.URL(preview.ThreadURL) } class="catalog-preview-link">{ preview.Subject }</a>
 				</h1>

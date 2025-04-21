@@ -226,14 +226,13 @@ func main() {
 
 		previews := make([]views.CatalogThreadPreview, 0, len(threads))
 		for _, thread := range threads {
-			op, err := database.GetOriginalPost(db, thread.Id)
+			posts, err := database.GetPosts(db, thread.Id)
 			if err != nil {
 				http.Error(w, "Failed to get posts", http.StatusBadRequest)
 				log.Printf("GetOriginalPost: %v", err)
 				return
 			}
-
-			log.Printf("OP: %+v", op)
+			op := posts[0]
 
 			if op.MediaPath == "" {
 				http.Error(w, "Malformed thread", http.StatusInternalServerError)
@@ -242,10 +241,12 @@ func main() {
 			}
 
 			previews = append(previews, views.CatalogThreadPreview{
-				Subject:   thread.Subject,
-				Body:      op.Body,
-				ThreadURL: fmt.Sprintf("/%s/threads/%d", slug, thread.Id),
-				MediaPath: op.MediaPath,
+				Subject:    thread.Subject,
+				Body:       op.Body,
+				ThreadURL:  fmt.Sprintf("/%s/threads/%d", slug, thread.Id),
+				MediaPath:  op.MediaPath,
+				ReplyCount: len(posts),
+				IpCount:    0, // TODO
 			})
 		}
 
