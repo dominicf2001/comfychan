@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -133,7 +134,7 @@ func main() {
 		timeRemaining := util.IsOnCooldown(ip, util.ThreadCooldowns, util.THREAD_COOLDOWN)
 		if timeRemaining > 0 {
 			response := fmt.Sprintf("Please wait %.0f seconds.", timeRemaining.Seconds())
-
+			io.Copy(io.Discard, r.Body)
 			http.Error(w, response, http.StatusTooManyRequests)
 			return
 		}
@@ -154,6 +155,19 @@ func main() {
 			return
 		}
 		defer file.Close()
+
+		isFileVideo, err := util.IsFileVideo(file)
+		if err != nil {
+			http.Error(w, "Failed to detect if file is a video", http.StatusInternalServerError)
+			return
+		}
+
+		fileExt := strings.ToLower(filepath.Ext(header.Filename))
+
+		if isFileVideo && !slices.Contains(util.SUPPORTED_VID_FORMATS, fileExt) {
+			http.Error(w, "Unsupported file format", http.StatusBadRequest)
+			return
+		}
 
 		filename := strconv.FormatInt(time.Now().UnixNano(), 10) + filepath.Ext(header.Filename)
 		err, savedMediaPath, savedThumbPath := util.SavePostFile(file, filename)
@@ -178,6 +192,7 @@ func main() {
 		timeRemaining := util.IsOnCooldown(ip, util.PostCooldowns, util.POST_COOLDOWN)
 		if timeRemaining > 0 {
 			response := fmt.Sprintf("Please wait %.0f seconds.", timeRemaining.Seconds())
+			io.Copy(io.Discard, r.Body)
 			http.Error(w, response, http.StatusTooManyRequests)
 			return
 		}
@@ -207,16 +222,14 @@ func main() {
 		} else {
 			defer file.Close()
 
-			isFileVideo := false
-			fileExt := strings.ToLower(filepath.Ext(header.Filename))
-
 			// file type
-			buffer := make([]byte, 512)
-			file.Read(buffer)
-			file.Seek(0, 0)
-			fileType := http.DetectContentType(buffer)
+			isFileVideo, err := util.IsFileVideo(file)
+			if err != nil {
+				http.Error(w, "Failed to detect if file is a video", http.StatusInternalServerError)
+				return
+			}
 
-			isFileVideo = strings.HasPrefix(fileType, "video/")
+			fileExt := strings.ToLower(filepath.Ext(header.Filename))
 
 			if isFileVideo && !slices.Contains(util.SUPPORTED_VID_FORMATS, fileExt) {
 				http.Error(w, "Unsupported file format", http.StatusBadRequest)

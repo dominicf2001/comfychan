@@ -123,7 +123,9 @@ templ Thread(board database.Board, thread database.Thread, posts []database.Post
 				id="newPostForm"
 				hx-target="#newPostWarning"
 				hx-post={ fmt.Sprintf("/%s/threads/%d", board.Slug, thread.Id) }
-				_="on htmx:afterRequest 
+				_="
+				on htmx:beforeSend toggle @disabled on <button/> until htmx:afterRequest  	
+				on htmx:afterRequest 
 					if event.detail.xhr.status is not 429
 						set #newPostBody.value to '' 
 						then set #newPostFile.value to '' 

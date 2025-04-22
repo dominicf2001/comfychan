@@ -62,14 +62,27 @@ func EnrichPost(body string) string {
 	return b.String()
 }
 
-func SavePostFile(file multipart.File, fileName string) (error, string, string) {
-	// read file type
+func IsFileVideo(file multipart.File) (bool, error) {
 	buffer := make([]byte, 512)
-	file.Read(buffer)
-	file.Seek(0, 0)
+	_, err := file.Read(buffer)
+	if err != nil {
+		return false, err
+	}
+	_, err = file.Seek(0, 0)
+	if err != nil {
+		return false, err
+	}
 
 	fileType := http.DetectContentType(buffer)
-	isFileVideo := strings.HasPrefix(fileType, "video/")
+
+	return strings.HasPrefix(fileType, "video/"), nil
+}
+
+func SavePostFile(file multipart.File, fileName string) (error, string, string) {
+	isFileVideo, err := IsFileVideo(file)
+	if err != nil {
+		return err, "", ""
+	}
 	fileExt := strings.ToLower(filepath.Ext(fileName))
 
 	// FULL
@@ -175,13 +188,7 @@ func GetPostFileInfo(mediaPath string) PostFileInfo {
 	defer file.Close()
 
 	// read file type
-	buffer := make([]byte, 512)
-	file.Read(buffer)
-	file.Seek(0, 0)
-
-	fileType := http.DetectContentType(buffer)
-	isFileVideo := strings.HasPrefix(fileType, "video/")
-
+	isFileVideo, _ := IsFileVideo(file)
 	result.Size = fileInfo.Size()
 
 	if !isFileVideo {
