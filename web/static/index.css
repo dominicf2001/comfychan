@@ -220,6 +220,14 @@ body {
     max-width: 100%;
 }
 
+.post-vid {
+    display: block;
+    float: left;
+    margin: 4px 12px 4px 0;
+    height: auto;
+    max-width: 100%;
+}
+
 .post-img-info {
     display: inline-block;
     font-size: 10px;

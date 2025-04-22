@@ -7,7 +7,9 @@ import (
 	"io"
 	"log"
 	"mime/multipart"
+	"net/http"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
@@ -17,9 +19,11 @@ import (
 
 // 10 MB memory limit
 const FILE_MEM_LIMIT int64 = 10 << 20
-const POST_IMG_FULL_PATH = "web/static/img/posts/full"
-const POST_IMG_THUMB_PATH = "web/static/img/posts/thumb"
+const POST_MEDIA_FULL_PATH = "web/static/media/posts/full"
+const POST_MEDIA_THUMB_PATH = "web/static/media/posts/thumb"
 const MAX_THREAD_COUNT = 50
+
+var SUPPORTED_VID_FORMATS = []string{".mp4", ".webm", ".ogg"}
 
 func EnrichPost(body string) string {
 	var b strings.Builder
@@ -58,86 +62,142 @@ func EnrichPost(body string) string {
 	return b.String()
 }
 
-func SavePostFile(file *multipart.File, filename string) error {
-	dstPathFull := filepath.Join(POST_IMG_FULL_PATH, filename)
-	dstPathThumb := filepath.Join(POST_IMG_THUMB_PATH, filename)
+func SavePostFile(file multipart.File, fileName string) (error, string, string) {
+	// read file type
+	buffer := make([]byte, 512)
+	file.Read(buffer)
+	file.Seek(0, 0)
+
+	fileType := http.DetectContentType(buffer)
+	isFileVideo := strings.HasPrefix(fileType, "video/")
+	fileExt := strings.ToLower(filepath.Ext(fileName))
 
 	// FULL
-	if err := os.MkdirAll(POST_IMG_FULL_PATH, 0755); err != nil {
+	if err := os.MkdirAll(POST_MEDIA_FULL_PATH, 0755); err != nil {
 		log.Printf("MkdirAll (full): %v", err)
-		return err
+		return err, "", ""
 	}
 
+	dstPathFull := filepath.Join(POST_MEDIA_FULL_PATH, fileName)
 	dstFull, err := os.Create(dstPathFull)
 	if err != nil {
 		log.Printf("os.Create (full): %v", err)
-		return err
+		return err, "", ""
 	}
 	defer dstFull.Close()
-	if _, err := io.Copy(dstFull, *file); err != nil {
+	if _, err := io.Copy(dstFull, file); err != nil {
 		log.Printf("io.Copy (full): %v", err)
-		return err
+		return err, "", ""
 	}
 
-	if _, err := (*file).Seek(0, 0); err != nil { // rewind file
+	if _, err := (file).Seek(0, 0); err != nil { // rewind file
 		log.Printf("seek file (thumb): %v", err)
-		return err
+		return err, "", ""
 	}
 
 	// THUMBNAIL
-	if err := os.MkdirAll(POST_IMG_THUMB_PATH, 0755); err != nil {
+	dstPathThumb := filepath.Join(POST_MEDIA_THUMB_PATH, fileName)
+	if err := os.MkdirAll(POST_MEDIA_THUMB_PATH, 0755); err != nil {
 		log.Printf("MkdirAll (thumb): %v", err)
-		return err
+		return err, "", ""
 	}
 
-	img, _, err := image.Decode(*file)
-	if err != nil {
-		log.Printf("image.Decode: %v", err)
-		return err
+	var thumbFileName string
+	if isFileVideo {
+		fileNameNoExt := strings.TrimSuffix(fileName, fileExt)
+		thumbFileName = fileNameNoExt + ".jpg"
+
+		inputPath := filepath.Join(POST_MEDIA_FULL_PATH, fileName)
+		outputPath := filepath.Join(POST_MEDIA_THUMB_PATH, thumbFileName)
+
+		cmd := exec.Command(
+			"ffmpeg",
+			"-i", inputPath,
+			"-ss", "00:00:01.000",
+			"-vframes", "1",
+			"-vf", "scale=300:-1",
+			outputPath,
+		)
+
+		if err := cmd.Run(); err != nil {
+			log.Printf("ffmpeg error: %v", err)
+			return err, "", ""
+		}
+
+	} else {
+		thumbFileName = fileName
+
+		img, _, err := image.Decode(file)
+		if err != nil {
+			log.Printf("image.Decode: %v", err)
+			return err, "", ""
+		}
+
+		var thumb image.Image
+		if img.Bounds().Dx() > 300 {
+			thumb = imaging.Resize(img, 300, 0, imaging.Lanczos)
+		} else {
+			thumb = img
+		}
+
+		if err = imaging.Save(thumb, dstPathThumb); err != nil {
+			log.Printf("imaging.Save: %v", err)
+			return err, "", ""
+		}
 	}
 
-	thumb := imaging.Resize(img, 300, 0, imaging.Lanczos)
-	if err = imaging.Save(thumb, dstPathThumb); err != nil {
-		log.Printf("imaging.Save: %v", err)
-		return err
-	}
-
-	return nil
+	return nil, fileName, thumbFileName
 }
 
-type PostImageInfo struct {
-	Size   int64
-	Height int
-	Width  int
+type PostFileInfo struct {
+	Size    int64
+	Height  int
+	Width   int
+	IsVideo bool
 }
 
-func GetPostImageInfo(mediaPath string) PostImageInfo {
-	var result PostImageInfo
+func GetPostFileInfo(mediaPath string) PostFileInfo {
+	var result PostFileInfo
 
-	imagePath := path.Join(POST_IMG_FULL_PATH, mediaPath)
+	filePath := path.Join(POST_MEDIA_FULL_PATH, mediaPath)
 
-	fileInfo, err := os.Stat(imagePath)
+	fileInfo, err := os.Stat(filePath)
 	if err != nil {
-		log.Printf("Failed to get image file info at %s: %v", mediaPath, err)
-		return PostImageInfo{}
+		log.Printf("Failed to get file info at %s: %v", mediaPath, err)
+		return PostFileInfo{}
 	}
 
-	file, err := os.Open(imagePath)
+	file, err := os.Open(filePath)
 	if err != nil {
-		log.Printf("Failed to open image at %s: %v", mediaPath, err)
-		return PostImageInfo{}
+		log.Printf("Failed to open file at %s: %v", mediaPath, err)
+		return PostFileInfo{}
 	}
 	defer file.Close()
 
-	cfg, _, err := image.DecodeConfig(file)
-	if err != nil {
-		log.Printf("Failed to decode image at %s: %v", mediaPath, err)
-		return PostImageInfo{}
-	}
+	// read file type
+	buffer := make([]byte, 512)
+	file.Read(buffer)
+	file.Seek(0, 0)
+
+	fileType := http.DetectContentType(buffer)
+	isFileVideo := strings.HasPrefix(fileType, "video/")
 
 	result.Size = fileInfo.Size()
-	result.Width = cfg.Width
-	result.Height = cfg.Height
+
+	if !isFileVideo {
+		cfg, _, err := image.DecodeConfig(file)
+		if err != nil {
+			log.Printf("Failed to decode image at %s: %v", mediaPath, err)
+			return PostFileInfo{}
+		}
+
+		result.Width = cfg.Width
+		result.Height = cfg.Height
+		result.IsVideo = false
+
+	} else {
+		result.IsVideo = true
+	}
 
 	return result
 }
@@ -162,4 +222,12 @@ func FormatBytes(bytes int64) string {
 	default:
 		return fmt.Sprintf("%d B", bytes)
 	}
+}
+
+func FormatFileInfo(fileInfo PostFileInfo) string {
+	humanSize := FormatBytes(fileInfo.Size)
+	if fileInfo.IsVideo {
+		return fmt.Sprintf("(%s)", humanSize)
+	}
+	return fmt.Sprintf("(%s, %dx%d)", humanSize, fileInfo.Width, fileInfo.Height)
 }

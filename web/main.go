@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -155,13 +156,14 @@ func main() {
 		defer file.Close()
 
 		filename := strconv.FormatInt(time.Now().UnixNano(), 10) + filepath.Ext(header.Filename)
-		if err := util.SavePostFile(&file, filename); err != nil {
+		err, savedMediaPath, savedThumbPath := util.SavePostFile(file, filename)
+		if err != nil {
 			http.Error(w, "Failed to save file", http.StatusInternalServerError)
 			log.Printf("savePostFile: %v", err)
 			return
 		}
 
-		if err := database.PutThread(db, slug, subject, body, filename, util.HashIp(ip)); err != nil {
+		if err := database.PutThread(db, slug, subject, body, savedMediaPath, savedThumbPath, util.HashIp(ip)); err != nil {
 			http.Error(w, "Failed to create thread", http.StatusInternalServerError)
 			log.Printf("PutThread: %v", err)
 			return
@@ -180,13 +182,6 @@ func main() {
 			return
 		}
 
-		threadIdStr := chi.URLParam(r, "threadId")
-		threadId, err := strconv.Atoi(threadIdStr)
-		if err != nil {
-			http.Error(w, "Invalid thread id", http.StatusBadRequest)
-			return
-		}
-
 		if err := r.ParseMultipartForm(util.FILE_MEM_LIMIT); err != nil {
 			http.Error(w, "Failed to parse form", http.StatusBadRequest)
 			log.Printf("ParseMultipartForm: %v", err)
@@ -195,6 +190,7 @@ func main() {
 
 		body := strings.TrimSpace(r.FormValue("body"))
 		mediaPath := ""
+		thumbPath := ""
 
 		if body == "" {
 			http.Error(w, "Malformed post body", http.StatusBadRequest)
@@ -204,22 +200,48 @@ func main() {
 		file, header, err := r.FormFile("file")
 		if err != nil {
 			if !errors.Is(err, http.ErrMissingFile) {
-				http.Error(w, "Failed to retrive file from form", http.StatusBadRequest)
+				http.Error(w, "Failed to retrieve file from form", http.StatusBadRequest)
 				log.Printf("FormFile: %v", err)
 				return
 			}
 		} else {
 			defer file.Close()
-			filename := strconv.FormatInt(time.Now().UnixNano(), 10) + filepath.Ext(header.Filename)
-			if err := util.SavePostFile(&file, filename); err != nil {
+
+			isFileVideo := false
+			fileExt := strings.ToLower(filepath.Ext(header.Filename))
+
+			// file type
+			buffer := make([]byte, 512)
+			file.Read(buffer)
+			file.Seek(0, 0)
+			fileType := http.DetectContentType(buffer)
+
+			isFileVideo = strings.HasPrefix(fileType, "video/")
+
+			if isFileVideo && !slices.Contains(util.SUPPORTED_VID_FORMATS, fileExt) {
+				http.Error(w, "Unsupported file format", http.StatusBadRequest)
+				return
+			}
+
+			filename := strconv.FormatInt(time.Now().UnixNano(), 10) + fileExt
+			err, savedMediaPath, savedThumbPath := util.SavePostFile(file, filename)
+			if err != nil {
 				http.Error(w, "Failed to save file", http.StatusInternalServerError)
 				log.Printf("savePostFile: %v", err)
 				return
 			}
-			mediaPath = filename
+			mediaPath = savedMediaPath
+			thumbPath = savedThumbPath
 		}
 
-		if err := database.PutPost(db, slug, threadId, body, mediaPath, util.HashIp(ip)); err != nil {
+		threadIdStr := chi.URLParam(r, "threadId")
+		threadId, err := strconv.Atoi(threadIdStr)
+		if err != nil {
+			http.Error(w, "Invalid thread id", http.StatusBadRequest)
+			return
+		}
+
+		if err := database.PutPost(db, slug, threadId, body, mediaPath, thumbPath, util.HashIp(ip)); err != nil {
 			http.Error(w, "Failed to create post", http.StatusInternalServerError)
 			log.Printf("PutPost: %v", err)
 			return
@@ -262,7 +284,7 @@ func main() {
 				Subject:    thread.Subject,
 				Body:       op.Body,
 				ThreadURL:  fmt.Sprintf("/%s/threads/%d", slug, thread.Id),
-				MediaPath:  op.MediaPath,
+				ThumbPath:  op.ThumbPath,
 				ReplyCount: len(posts),
 				IpCount:    SumUniquePostIps(posts),
 			})

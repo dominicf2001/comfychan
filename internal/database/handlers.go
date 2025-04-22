@@ -93,7 +93,7 @@ func GetThread(db *sql.DB, threadId int) (Thread, error) {
 
 func GetPosts(db *sql.DB, threadId int) ([]Post, error) {
 	rows, err := db.Query(`
-		SELECT id, thread_id, author, body, created_at, media_path, ip_hash, number 
+		SELECT id, thread_id, author, body, created_at, media_path, ip_hash, number, thumb_path 
 		FROM posts 
 		WHERE thread_id = ?`, threadId)
 
@@ -105,7 +105,7 @@ func GetPosts(db *sql.DB, threadId int) ([]Post, error) {
 	var result []Post
 	for rows.Next() {
 		var p Post
-		err := rows.Scan(&p.Id, &p.ThreadId, &p.Author, &p.Body, &p.CreatedAt, &p.MediaPath, &p.IpHash, &p.Number)
+		err := rows.Scan(&p.Id, &p.ThreadId, &p.Author, &p.Body, &p.CreatedAt, &p.MediaPath, &p.IpHash, &p.Number, &p.ThumbPath)
 		if err != nil {
 			return nil, err
 		}
@@ -117,20 +117,20 @@ func GetPosts(db *sql.DB, threadId int) ([]Post, error) {
 
 func GetOriginalPost(db *sql.DB, threadId int) (Post, error) {
 	row := db.QueryRow(`
-		SELECT id, thread_id, author, body, created_at, media_path, ip_hash, number
+		SELECT id, thread_id, author, body, created_at, media_path, ip_hash, number, thumb_path
 		FROM posts 
 		WHERE thread_id = ? 
 		ORDER BY created_at ASC LIMIT 1`, threadId)
 
 	var r Post
-	err := row.Scan(&r.Id, &r.ThreadId, &r.Author, &r.Body, &r.CreatedAt, &r.MediaPath, &r.IpHash, &r.Number)
+	err := row.Scan(&r.Id, &r.ThreadId, &r.Author, &r.Body, &r.CreatedAt, &r.MediaPath, &r.IpHash, &r.Number, &r.ThumbPath)
 	if err != nil {
 		return Post{}, err
 	}
 	return r, row.Err()
 }
 
-func PutThread(db *sql.DB, boardSlug string, subject string, body string, mediaPath string, ip_hash string) error {
+func PutThread(db *sql.DB, boardSlug string, subject string, body string, mediaPath string, thumbPath string, ip_hash string) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return err
@@ -150,7 +150,7 @@ func PutThread(db *sql.DB, boardSlug string, subject string, body string, mediaP
 		return err
 	}
 
-	if err := PutPost(tx, boardSlug, int(threadId), body, mediaPath, ip_hash); err != nil {
+	if err := PutPost(tx, boardSlug, int(threadId), body, mediaPath, thumbPath, ip_hash); err != nil {
 		return err
 	}
 
@@ -188,7 +188,7 @@ func PutThread(db *sql.DB, boardSlug string, subject string, body string, mediaP
 	return nil
 }
 
-func PutPost(db Queryer, boardSlug string, threadId int, body string, mediaPath string, ip_hash string) error {
+func PutPost(db Queryer, boardSlug string, threadId int, body string, mediaPath string, thumbPath string, ip_hash string) error {
 	row := db.QueryRow(`
 		SELECT MAX(p.number)
 		FROM posts p 
@@ -206,8 +206,8 @@ func PutPost(db Queryer, boardSlug string, threadId int, body string, mediaPath 
 	}
 
 	_, err := db.Exec(`
-		INSERT INTO posts (thread_id, body, media_path, ip_hash, number) 
-		VALUES (?, ?, ?, ?, ?)`, threadId, body, mediaPath, ip_hash, newPostNumber)
+		INSERT INTO posts (thread_id, body, media_path, ip_hash, number, thumb_path) 
+		VALUES (?, ?, ?, ?, ?, ?)`, threadId, body, mediaPath, ip_hash, newPostNumber, thumbPath)
 	if err != nil {
 		return err
 	}
@@ -241,10 +241,10 @@ func DeleteThread(db Queryer, threadId int) error {
 	}
 
 	for _, pruneMediaPath := range pruneMediaPaths {
-		if err := os.Remove(path.Join(util.POST_IMG_FULL_PATH, pruneMediaPath)); err != nil && !os.IsNotExist(err) {
+		if err := os.Remove(path.Join(util.POST_MEDIA_FULL_PATH, pruneMediaPath)); err != nil && !os.IsNotExist(err) {
 			return err
 		}
-		if err := os.Remove(path.Join(util.POST_IMG_THUMB_PATH, pruneMediaPath)); err != nil && !os.IsNotExist(err) {
+		if err := os.Remove(path.Join(util.POST_MEDIA_THUMB_PATH, pruneMediaPath)); err != nil && !os.IsNotExist(err) {
 			return err
 		}
 	}

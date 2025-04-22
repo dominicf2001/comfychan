@@ -42,7 +42,15 @@ templ NewThreadForm(board database.Board) {
 				</tr>
 				<tr class="new-post-form-field">
 					<th>File</th>
-					<td><input id="newPostFile" name="file" type="file" required/></td>
+					<td>
+						<input
+							accept="image/*,video/mp4,video/webm,video/ogg"
+							id="newPostFile"
+							name="file"
+							type="file"
+							required
+						/>
+					</td>
 				</tr>
 			</tbody>
 		</table>
@@ -52,7 +60,7 @@ templ NewThreadForm(board database.Board) {
 
 templ BoardHeader(board database.Board) {
 	<header class="board-header">
-		<img src={ fmt.Sprintf("/static/img/banners/%s.png", board.Slug) }/>
+		<img src={ fmt.Sprintf("/static/media/banners/%s.png", board.Slug) }/>
 		<h1>
 			{ fmt.Sprintf("/%s/ - %s", board.Slug, board.Name) }
 		</h1>
@@ -91,7 +99,7 @@ type CatalogThreadPreview struct {
 	Subject    string
 	Body       string
 	ThreadURL  string
-	MediaPath  string
+	ThumbPath  string
 	ReplyCount int
 	IpCount    int
 }
@@ -106,8 +114,8 @@ templ ThreadsCatalog(previews []CatalogThreadPreview) {
 					<img
 						loading="lazy"
 						class="catalog-preview-img"
-						src={ fmt.Sprintf("/static/img/posts/thumb/%s",
-				preview.MediaPath) }
+						src={ fmt.Sprintf("/static/media/posts/thumb/%s",
+				preview.ThumbPath) }
 					/>
 				</a>
 				<strong class="catalog-preview-counts">R: { replyCount } / I: { ipCount }</strong>

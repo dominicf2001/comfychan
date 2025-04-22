@@ -23,11 +23,12 @@ CREATE TABLE IF NOT EXISTS threads (
 CREATE TABLE IF NOT EXISTS posts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     thread_id INTEGER NOT NULL,
-    number INTEGER NOT NULL,
+    number INTEGER NOT NULL ,
     author TEXT DEFAULT 'Anonymous',
     body TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     media_path TEXT NOT NULL DEFAULT '',
+    thumb_path TEXT NOT NULL DEFAULT '',
     ip_hash TEXT NOT NULL,
     FOREIGN KEY (thread_id) REFERENCES threads(id) ON DELETE CASCADE
 );

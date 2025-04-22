@@ -9,24 +9,25 @@ import (
 )
 
 templ PostOriginal(post database.Post, thread *database.Thread) {
-	{{ imgInfo := util.GetPostImageInfo(post.MediaPath) }}
 	<article id={ fmt.Sprintf("post-%d", post.Number) } class="post-op">
 		<div>
 			File:
-			<a href={ templ.URL("/static/img/posts/full/" + post.MediaPath) } class="post-filename">
+			<a href={ templ.URL("/static/media/posts/full/" + post.MediaPath) } class="post-filename">
 				{ post.MediaPath }
 			</a>
 			<div class="post-img-info">
-				(<span>{ util.FormatBytes(imgInfo.Size) }</span>,
-				<span>{ strconv.Itoa(imgInfo.Width) }</span>x<span>{ strconv.Itoa(imgInfo.Height) }</span>)
+				<span>{ util.FormatFileInfo(util.GetPostFileInfo(post.MediaPath)) }</span>
 			</div>
 		</div>
 		<img
-			onclick="togglePostImage(this)"
+			onclick="togglePostFile(this)"
 			loading="lazy"
-			src={ fmt.Sprintf("/static/img/posts/thumb/%s", post.MediaPath) }
+			src={ fmt.Sprintf("/static/media/posts/thumb/%s", post.ThumbPath) }
+			data-full={ post.MediaPath }
+			data-thumb={ post.ThumbPath }
 			class="post-img"
 		/>
+		<video controls style="display: none;" class="post-vid"></video>
 		<header style="margin-top: 10px;" class="post-header">
 			<h1 class="thread-subject">{ thread.Subject } -</h1>
 			<span class="post-author">{ post.Author }</span>
@@ -61,25 +62,26 @@ templ PostReply(post database.Post) {
 			<span class="post-replies"></span>
 		</header>
 		if post.MediaPath != "" {
-			{{ imgInfo := util.GetPostImageInfo(post.MediaPath) }}
 			<div>
 				<div style="margin-bottom: 2px;">
 					File:
-					<a href={ templ.URL("/static/img/posts/full/" + post.MediaPath) } class="post-filename">
+					<a href={ templ.URL("/static/media/posts/full/" + post.MediaPath) } class="post-filename">
 						{ post.MediaPath }
 					</a>
 					<div class="post-img-info">
-						(<span>{ util.FormatBytes(imgInfo.Size) }</span>,
-						<span>{ strconv.Itoa(imgInfo.Width) }</span>x<span>{ strconv.Itoa(imgInfo.Height) }</span>)
+						<span>{ util.FormatFileInfo(util.GetPostFileInfo(post.MediaPath)) }</span>
 					</div>
 				</div>
 				<img
-					onclick="togglePostImage(this)"
+					onclick="togglePostFile(this)"
 					loading="lazy"
-					src={ fmt.Sprintf("/static/img/posts/thumb/%s",
-			post.MediaPath) }
+					src={ fmt.Sprintf("/static/media/posts/thumb/%s",
+			post.ThumbPath) }
+					data-full={ post.MediaPath }
+					data-thumb={ post.ThumbPath }
 					class="post-img"
 				/>
+				<video controls style="display: none;" class="post-vid"></video>
 			</div>
 		}
 		<p class="post-body">
@@ -128,7 +130,14 @@ templ Thread(board database.Board, thread database.Thread, posts []database.Post
 						</tr>
 						<tr class="new-post-form-field">
 							<th>File</th>
-							<td><input id="newPostFile" name="file" type="file"/></td>
+							<td>
+								<input
+									accept="image/*,video/mp4,video/webm,video/ogg"
+									id="newPostFile"
+									name="file"
+									type="file"
+								/>
+							</td>
 						</tr>
 					</tbody>
 				</table>

@@ -36,15 +36,32 @@ function insertHeaderReplies() {
     }
 }
 
-function togglePostImage(img) {
-    const filename = img.src.split("/").at(-1);
-    if (img.classList.contains("post-img-full")) {
-        img.classList.remove("post-img-full");
-        img.src = "/static/img/posts/thumb/" + filename;
+function togglePostFile(imgEl) {
+    const isVideo = imgEl.dataset.full.endsWith(".mp4") || imgEl.dataset.full.endsWith(".webm") || imgEl.dataset.full.endsWith(".ogg");
+
+
+    if (isVideo) {
+        const vidEl = imgEl.parentElement.querySelector("video");
+        if (vidEl.style.display === "none") {
+            vidEl.src = "/static/media/posts/full/" + imgEl.dataset.full;
+            vidEl.style.display = "";
+            imgEl.style.display = "none";
+        }
+        else {
+            vidEl.src = "";
+            vidEl.style.display = "none";
+            imgEl.style.display = "";
+        }
     }
     else {
-        img.classList.add("post-img-full");
-        img.src = "/static/img/posts/full/" + filename;
+        if (imgEl.classList.contains("post-img-full")) {
+            imgEl.classList.remove("post-img-full");
+            imgEl.src = "/static/media/posts/thumb/" + imgEl.dataset.thumb;
+        }
+        else {
+            imgEl.classList.add("post-img-full");
+            imgEl.src = "/static/media/posts/full/" + imgEl.dataset.full;
+        }
     }
 }
 
