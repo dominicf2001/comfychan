@@ -36,21 +36,24 @@ function insertHeaderReplies() {
     }
 }
 
-function togglePostFile(imgEl) {
+function togglePostFile(el) {
+    const imgEl = el.parentElement.parentElement.querySelector("img");
     const isVideo = imgEl.dataset.full.endsWith(".mp4") || imgEl.dataset.full.endsWith(".webm") || imgEl.dataset.full.endsWith(".ogg");
-
 
     if (isVideo) {
         const vidEl = imgEl.parentElement.querySelector("video");
+        const closeVidBtn = imgEl.parentElement.querySelector(".link-button");
         if (vidEl.style.display === "none") {
             vidEl.src = "/static/media/posts/full/" + imgEl.dataset.full;
             vidEl.style.display = "";
             imgEl.style.display = "none";
+            closeVidBtn.style.display = "";
         }
         else {
             vidEl.src = "";
             vidEl.style.display = "none";
             imgEl.style.display = "";
+            closeVidBtn.style.display = "none";
         }
     }
     else {

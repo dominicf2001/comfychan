@@ -11,6 +11,12 @@ import (
 templ PostOriginal(post database.Post, thread *database.Thread) {
 	<article id={ fmt.Sprintf("post-%d", post.Number) } class="post-op">
 		<div>
+			<span
+				class="link-button"
+				onclick="togglePostFile(this)"
+				class="link-button"
+				style=" display: none;"
+			>[close]</span>
 			File:
 			<a href={ templ.URL("/static/media/posts/full/" + post.MediaPath) } class="post-filename">
 				{ post.MediaPath }
@@ -64,6 +70,12 @@ templ PostReply(post database.Post) {
 		if post.MediaPath != "" {
 			<div>
 				<div style="margin-bottom: 2px;">
+					<span
+						class="link-button"
+						onclick="togglePostFile(this)"
+						class="link-button"
+						style=" display: none;"
+					>[close]</span>
 					File:
 					<a href={ templ.URL("/static/media/posts/full/" + post.MediaPath) } class="post-filename">
 						{ post.MediaPath }
