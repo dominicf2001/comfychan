@@ -25,16 +25,25 @@ const THREAD_COOLDOWN = 2 * time.Minute
 
 // const THREAD_COOLDOWN = 0 * time.Minute
 
-func IsOnCooldown(ip string, m map[string]time.Time, duration time.Duration) time.Duration {
+func GetRemainingCooldown(ip string, m map[string]time.Time, duration time.Duration) time.Duration {
+	CooldownMutex.Lock()
+	defer CooldownMutex.Unlock()
+
+	last, exists := m[ip]
+	if !exists {
+		return 0
+	}
+	return duration - time.Since(last)
+}
+
+func BeginCooldown(ip string, m map[string]time.Time, duration time.Duration) {
 	CooldownMutex.Lock()
 	defer CooldownMutex.Unlock()
 
 	last, exists := m[ip]
 	if !exists || time.Since(last) >= duration {
 		m[ip] = time.Now()
-		return time.Duration(0)
 	}
-	return duration - time.Since(last)
 }
 
 func GetIP(r *http.Request) string {

@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/disintegration/imaging"
@@ -19,11 +20,26 @@ import (
 
 // 10 MB memory limit
 const FILE_MEM_LIMIT int64 = 10 << 20
+const MAX_REQUEST_BYTES int64 = FILE_MEM_LIMIT + (1 << 20)
+
 const POST_MEDIA_FULL_PATH = "web/static/media/posts/full"
 const POST_MEDIA_THUMB_PATH = "web/static/media/posts/thumb"
+
 const MAX_THREAD_COUNT = 50
 
-var SUPPORTED_VID_FORMATS = []string{".mp4", ".webm", ".ogg"}
+const MAX_BODY_LEN = 3000
+const MAX_SUBJECT_LEN = 100
+
+var SUPPORTED_IMAGE_MIME_TYPES = []string{"image/jpeg", "image/png", "image/gif", "image/webp"}
+var SUPPORTED_VIDEO_MIME_TYPES = []string{"video/webm", "video/mp4", "video/ogg"}
+
+type PostMediaType int64
+
+const (
+	PostFileImage PostMediaType = iota
+	PostFileVideo
+	PostFileUnsupported
+)
 
 func EnrichPost(body string) string {
 	var b strings.Builder
@@ -62,27 +78,32 @@ func EnrichPost(body string) string {
 	return b.String()
 }
 
-func IsFileVideo(file multipart.File) (bool, error) {
+func DetectPostFileType(file multipart.File) (PostMediaType, error) {
 	buffer := make([]byte, 512)
-	_, err := file.Read(buffer)
-	if err != nil {
-		return false, err
-	}
-	_, err = file.Seek(0, 0)
-	if err != nil {
-		return false, err
+	n, err := file.Read(buffer)
+	if err != nil && err != io.EOF {
+		return PostFileUnsupported, err
 	}
 
-	fileType := http.DetectContentType(buffer)
+	fileType := http.DetectContentType(buffer[:n])
 
-	return strings.HasPrefix(fileType, "video/"), nil
+	switch {
+	case slices.Contains(SUPPORTED_IMAGE_MIME_TYPES, fileType):
+		return PostFileImage, nil
+	case slices.Contains(SUPPORTED_VIDEO_MIME_TYPES, fileType):
+		return PostFileVideo, nil
+	default:
+		return PostFileUnsupported, nil
+	}
 }
 
 func SavePostFile(file multipart.File, fileName string) (error, string, string) {
-	isFileVideo, err := IsFileVideo(file)
+	mediaType, err := DetectPostFileType(file)
 	if err != nil {
 		return err, "", ""
 	}
+	file.Seek(0, io.SeekStart)
+
 	fileExt := strings.ToLower(filepath.Ext(fileName))
 
 	// FULL
@@ -116,7 +137,7 @@ func SavePostFile(file multipart.File, fileName string) (error, string, string) 
 	}
 
 	var thumbFileName string
-	if isFileVideo {
+	if mediaType == PostFileVideo {
 		fileNameNoExt := strings.TrimSuffix(fileName, fileExt)
 		thumbFileName = fileNameNoExt + ".jpg"
 
@@ -188,10 +209,12 @@ func GetPostFileInfo(mediaPath string) PostFileInfo {
 	defer file.Close()
 
 	// read file type
-	isFileVideo, _ := IsFileVideo(file)
+	mediaType, _ := DetectPostFileType(file)
+	file.Seek(0, io.SeekStart)
+
 	result.Size = fileInfo.Size()
 
-	if !isFileVideo {
+	if mediaType != PostFileVideo {
 		cfg, _, err := image.DecodeConfig(file)
 		if err != nil {
 			log.Printf("Failed to decode image at %s: %v", mediaPath, err)
@@ -237,4 +260,18 @@ func FormatFileInfo(fileInfo PostFileInfo) string {
 		return fmt.Sprintf("(%s)", humanSize)
 	}
 	return fmt.Sprintf("(%s, %dx%d)", humanSize, fileInfo.Width, fileInfo.Height)
+}
+
+func IsMediaTooLarge(file multipart.File) (bool, error) {
+	limitedReader := io.LimitReader(file, FILE_MEM_LIMIT+1)
+	fileBytes, err := io.ReadAll(limitedReader)
+	if err != nil {
+		return true, err
+	}
+
+	if int64(len(fileBytes)) > FILE_MEM_LIMIT {
+		return true, nil
+	}
+
+	return false, nil
 }

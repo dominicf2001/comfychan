@@ -132,8 +132,7 @@ body {
     margin: auto;
 }
 
-#newPostForm button,
-#newThreadForm button {
+#newPostForm button {
     display: block;
     margin-left: auto;
 }

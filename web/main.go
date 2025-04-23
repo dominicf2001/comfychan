@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
-	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -131,22 +130,41 @@ func main() {
 		slug := chi.URLParam(r, "slug")
 		ip := util.GetIP(r)
 
-		timeRemaining := util.IsOnCooldown(ip, util.ThreadCooldowns, util.THREAD_COOLDOWN)
+		// check cooldown
+		timeRemaining := util.GetRemainingCooldown(ip, util.ThreadCooldowns, util.THREAD_COOLDOWN)
 		if timeRemaining > 0 {
-			response := fmt.Sprintf("Please wait %.0f seconds.", timeRemaining.Seconds())
+			response := fmt.Sprintf("Please wait %.0f seconds", timeRemaining.Seconds())
 			io.Copy(io.Discard, r.Body)
 			http.Error(w, response, http.StatusTooManyRequests)
 			return
 		}
 
+		// parse form
+		r.Body = http.MaxBytesReader(w, r.Body, util.MAX_REQUEST_BYTES)
 		if err := r.ParseMultipartForm(util.FILE_MEM_LIMIT); err != nil {
 			http.Error(w, "Failed to parse form", http.StatusBadRequest)
 			log.Printf("ParseMultipartForm: %v", err)
 			return
 		}
 
-		subject := r.FormValue("subject")
+		// validate inputs
+		subject := strings.ReplaceAll(strings.TrimSpace(r.FormValue("subject")), "\n", "")
 		body := strings.TrimSpace(r.FormValue("body"))
+
+		if len(subject) > util.MAX_SUBJECT_LEN {
+			http.Error(w, fmt.Sprintf("Subject exceeds %d characters", util.MAX_BODY_LEN), http.StatusBadRequest)
+			return
+		}
+
+		if body == "" {
+			http.Error(w, "Body is empty", http.StatusBadRequest)
+			return
+		}
+
+		if len(body) > util.MAX_BODY_LEN {
+			http.Error(w, fmt.Sprintf("Body exceeds %d characters", util.MAX_BODY_LEN), http.StatusBadRequest)
+			return
+		}
 
 		file, header, err := r.FormFile("file")
 		if err != nil {
@@ -156,16 +174,32 @@ func main() {
 		}
 		defer file.Close()
 
-		isFileVideo, err := util.IsFileVideo(file)
+		if header.Size > util.FILE_MEM_LIMIT {
+			http.Error(w, "File too large (max 10 MB)", http.StatusRequestEntityTooLarge)
+			return
+		}
+
+		isMediaTooLarge, err := util.IsMediaTooLarge(file)
+		if err != nil {
+			http.Error(w, "Failed to detect if file is too large", http.StatusInternalServerError)
+			return
+		}
+		file.Seek(0, io.SeekStart)
+
+		if isMediaTooLarge {
+			http.Error(w, "File too large (max 10MB)", http.StatusRequestEntityTooLarge)
+			return
+		}
+
+		mediaType, err := util.DetectPostFileType(file)
 		if err != nil {
 			http.Error(w, "Failed to detect if file is a video", http.StatusInternalServerError)
 			return
 		}
+		file.Seek(0, io.SeekStart)
 
-		fileExt := strings.ToLower(filepath.Ext(header.Filename))
-
-		if isFileVideo && !slices.Contains(util.SUPPORTED_VID_FORMATS, fileExt) {
-			http.Error(w, "Unsupported file format", http.StatusBadRequest)
+		if mediaType == util.PostFileUnsupported {
+			http.Error(w, "Unsupported media type", http.StatusBadRequest)
 			return
 		}
 
@@ -182,6 +216,8 @@ func main() {
 			log.Printf("PutThread: %v", err)
 			return
 		}
+
+		util.BeginCooldown(ip, util.ThreadCooldowns, util.THREAD_COOLDOWN)
 	})
 
 	// CREATE POST
@@ -189,26 +225,35 @@ func main() {
 		slug := chi.URLParam(r, "slug")
 		ip := util.GetIP(r)
 
-		timeRemaining := util.IsOnCooldown(ip, util.PostCooldowns, util.POST_COOLDOWN)
+		// check cooldown
+		timeRemaining := util.GetRemainingCooldown(ip, util.PostCooldowns, util.POST_COOLDOWN)
 		if timeRemaining > 0 {
-			response := fmt.Sprintf("Please wait %.0f seconds.", timeRemaining.Seconds())
+			response := fmt.Sprintf("Please wait %.0f seconds", timeRemaining.Seconds())
 			io.Copy(io.Discard, r.Body)
 			http.Error(w, response, http.StatusTooManyRequests)
 			return
 		}
 
+		// parse form
+		r.Body = http.MaxBytesReader(w, r.Body, util.MAX_REQUEST_BYTES)
 		if err := r.ParseMultipartForm(util.FILE_MEM_LIMIT); err != nil {
 			http.Error(w, "Failed to parse form", http.StatusBadRequest)
 			log.Printf("ParseMultipartForm: %v", err)
 			return
 		}
 
+		// validate inputs
 		body := strings.TrimSpace(r.FormValue("body"))
 		mediaPath := ""
 		thumbPath := ""
 
 		if body == "" {
-			http.Error(w, "Malformed post body", http.StatusBadRequest)
+			http.Error(w, "Body is empty", http.StatusBadRequest)
+			return
+		}
+
+		if len(body) > util.MAX_BODY_LEN {
+			http.Error(w, fmt.Sprintf("Body exceeds %d characters", util.MAX_BODY_LEN), http.StatusBadRequest)
 			return
 		}
 
@@ -222,21 +267,36 @@ func main() {
 		} else {
 			defer file.Close()
 
-			// file type
-			isFileVideo, err := util.IsFileVideo(file)
+			if header.Size > util.FILE_MEM_LIMIT {
+				http.Error(w, "File too large (max 10 MB)", http.StatusRequestEntityTooLarge)
+				return
+			}
+
+			isMediaTooLarge, err := util.IsMediaTooLarge(file)
+			if err != nil {
+				http.Error(w, "Failed to detect if file is too large", http.StatusInternalServerError)
+				return
+			}
+			file.Seek(0, io.SeekStart)
+
+			if isMediaTooLarge {
+				http.Error(w, "File too large (max 5MB)", http.StatusRequestEntityTooLarge)
+				return
+			}
+
+			mediaType, err := util.DetectPostFileType(file)
 			if err != nil {
 				http.Error(w, "Failed to detect if file is a video", http.StatusInternalServerError)
 				return
 			}
+			file.Seek(0, io.SeekStart)
 
-			fileExt := strings.ToLower(filepath.Ext(header.Filename))
-
-			if isFileVideo && !slices.Contains(util.SUPPORTED_VID_FORMATS, fileExt) {
-				http.Error(w, "Unsupported file format", http.StatusBadRequest)
+			if mediaType == util.PostFileUnsupported {
+				http.Error(w, "Unsupported media type", http.StatusBadRequest)
 				return
 			}
 
-			filename := strconv.FormatInt(time.Now().UnixNano(), 10) + fileExt
+			filename := strconv.FormatInt(time.Now().UnixNano(), 10) + filepath.Ext(header.Filename)
 			err, savedMediaPath, savedThumbPath := util.SavePostFile(file, filename)
 			if err != nil {
 				http.Error(w, "Failed to save file", http.StatusInternalServerError)
@@ -247,6 +307,7 @@ func main() {
 			thumbPath = savedThumbPath
 		}
 
+		// put post into DB
 		threadIdStr := chi.URLParam(r, "threadId")
 		threadId, err := strconv.Atoi(threadIdStr)
 		if err != nil {
@@ -259,6 +320,8 @@ func main() {
 			log.Printf("PutPost: %v", err)
 			return
 		}
+
+		util.BeginCooldown(ip, util.PostCooldowns, util.POST_COOLDOWN)
 	})
 
 	// -----------------

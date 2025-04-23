@@ -117,46 +117,7 @@ templ Thread(board database.Board, thread database.Thread, posts []database.Post
 		<script src="/static/thread.js" defer></script>
 		@BoardHeader(board)
 		<div class="new-post-container">
-			<div style="display: none;" id="newPostWarning" class="warning"></div>
-			<form
-				hx-encoding="multipart/form-data"
-				id="newPostForm"
-				hx-target="#newPostWarning"
-				hx-post={ fmt.Sprintf("/%s/threads/%d", board.Slug, thread.Id) }
-				_="
-				on htmx:beforeSend toggle @disabled on <button/> until htmx:afterRequest  	
-				on htmx:afterRequest 
-					if event.detail.xhr.status is not 429
-						set #newPostBody.value to '' 
-						then set #newPostFile.value to '' 
-						then hide #newPostWarning
-						then trigger refreshPosts on body
-					else
-						show #newPostWarning
-						then put event.detail.xhr.responseText into #newPostWarning
-					end"
-			>
-				<table>
-					<tbody>
-						<tr class="new-post-form-field">
-							<th>comment</th>
-							<td><textarea id="newPostBody" name="body" required></textarea></td>
-						</tr>
-						<tr class="new-post-form-field">
-							<th>File</th>
-							<td>
-								<input
-									accept="image/*,video/mp4,video/webm,video/ogg"
-									id="newPostFile"
-									name="file"
-									type="file"
-								/>
-							</td>
-						</tr>
-					</tbody>
-				</table>
-				<button type="submit">Submit</button>
-			</form>
+			@shared.NewPostForm(board, fmt.Sprintf("/%s/threads/%d", board.Slug, thread.Id), false)
 		</div>
 		<hr/>
 		<div style="margin-left: 25px;">

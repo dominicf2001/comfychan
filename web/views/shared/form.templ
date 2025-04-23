@@ -1,0 +1,65 @@
+package shared
+
+import "github.com/dominicf2001/comfychan/internal/database"
+import "strings"
+import "github.com/dominicf2001/comfychan/internal/util"
+import "strconv"
+
+templ NewPostForm(board database.Board, endpoint string, isForThread bool) {
+	<div style="display: none;" id="newPostWarning" class="warning"></div>
+	<form
+		hx-encoding="multipart/form-data"
+		id="newPostForm"
+		hx-swap="none"
+		hx-post={ endpoint }
+		_="
+			on htmx:beforeRequest toggle @disabled on <button/> until htmx:afterRequest
+
+			on htmx:afterRequest
+			  if isHttpWarningStatus(event.detail.xhr.status)
+				show #newPostWarning
+				put event.detail.xhr.responseText into #newPostWarning
+			  else
+				hide #newPostWarning
+				set #newPostBody.value to ''
+				set #newPostFile.value to ''
+				set #newPostSubject.value to ''
+				trigger refreshPosts on body
+			  end
+		  "
+	>
+		<table>
+			{{ acceptedMimeTypes := strings.Join(util.SUPPORTED_IMAGE_MIME_TYPES, ",") + "," + strings.Join(util.SUPPORTED_VIDEO_MIME_TYPES, ",") }}
+			<tbody>
+				<tr
+					if !isForThread {
+						style="display: none;"
+					}
+					class="new-post-form-field"
+				>
+					<th>Subject</th>
+					<td><input maxlength={ strconv.Itoa(util.MAX_SUBJECT_LEN) } id="newPostSubject" name="subject"/></td>
+				</tr>
+				<tr class="new-post-form-field">
+					<th>Comment</th>
+					<td><textarea maxlength={ strconv.Itoa(util.MAX_BODY_LEN) } id="newPostBody" name="body" required></textarea></td>
+				</tr>
+				<tr class="new-post-form-field">
+					<th>File</th>
+					<td>
+						<input
+							accept={ acceptedMimeTypes }
+							id="newPostFile"
+							name="file"
+							type="file"
+							if isForThread {
+								required
+							}
+						/>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<button type="submit">Submit</button>
+	</form>
+}

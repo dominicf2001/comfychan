@@ -13,6 +13,11 @@ function isOffScreen(el) {
     );
 }
 
+function isHttpWarningStatus(code) {
+    const warningStatuses = [429, 400, 413];
+    return warningStatuses.includes(code);
+}
+
 function insertAfter(referenceNode, newNode) {
     referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
 }
