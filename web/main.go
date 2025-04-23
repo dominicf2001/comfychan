@@ -25,6 +25,17 @@ import (
 
 var dev = true
 
+func AdminOnlyMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c, err := r.Cookie("comfy_admin")
+		if err != nil || !util.IsAdminSessionValid(c.Value) {
+			http.Redirect(w, r, "/authorize", http.StatusSeeOther)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
 func disableCacheInDevMode(next http.Handler) http.Handler {
 	if !dev {
 		return next
@@ -416,12 +427,11 @@ func main() {
 	// ADMIN ROUTES (htmx)
 	// -----------------
 
-	r.Get("/login", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println(util.AdminSessions)
+	r.Get("/authorize", func(w http.ResponseWriter, r *http.Request) {
 		admin.AdminLogin().Render(r.Context(), w)
 	})
 
-	r.Post("/login", func(w http.ResponseWriter, r *http.Request) {
+	r.Post("/authorize", func(w http.ResponseWriter, r *http.Request) {
 		username := r.FormValue("username")
 		password := r.FormValue("password")
 
@@ -472,7 +482,7 @@ func main() {
 	})
 
 	r.Route("/admin", func(r chi.Router) {
-		r.Use(util.AdminOnlyMiddleware)
+		r.Use(AdminOnlyMiddleware)
 
 		r.Post("/logout", func(w http.ResponseWriter, r *http.Request) {
 			if c, err := r.Cookie("comfy_admin"); err == nil {
