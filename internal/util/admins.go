@@ -3,6 +3,7 @@ package util
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"net/http"
 	"sync"
 	"time"
 )
@@ -64,4 +65,15 @@ func HasExistingAdminSession(username string) bool {
 	}
 
 	return false
+}
+
+func AdminOnlyMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c, err := r.Cookie("comfy_admin")
+		if err != nil || !IsAdminSessionValid(c.Value) {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }

@@ -70,7 +70,7 @@ func main() {
 	// -----------------
 
 	// INDEX PAGE
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+	r.With(util.AdminOnlyMiddleware).Get("/", func(w http.ResponseWriter, r *http.Request) {
 		views.Index().Render(r.Context(), w)
 	})
 
