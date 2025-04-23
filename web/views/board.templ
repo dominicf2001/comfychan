@@ -18,7 +18,7 @@ templ BoardHeader(board database.Board) {
 	</header>
 }
 
-templ Board(board database.Board) {
+templ Board(board database.Board, isAdmin bool) {
 	@shared.Layout() {
 		@BoardHeader(board)
 		<div class="new-post-container">
@@ -58,7 +58,7 @@ type CatalogThreadPreview struct {
 	IpCount    int
 }
 
-templ ThreadsCatalog(previews []CatalogThreadPreview) {
+templ ThreadsCatalog(previews []CatalogThreadPreview, isAdmin bool) {
 	<div id="catalog">
 		for _, preview := range previews {
 			{{ replyCount := strconv.FormatInt(int64(preview.ReplyCount), 10) }}
@@ -79,6 +79,9 @@ templ ThreadsCatalog(previews []CatalogThreadPreview) {
 				<p>
 					@templ.Raw(util.EnrichPost(preview.Body))
 				</p>
+				if isAdmin {
+					<button>X</button>
+				}
 			</div>
 		}
 	</div>

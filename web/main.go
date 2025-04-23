@@ -43,6 +43,14 @@ func SumUniquePostIps(posts []database.Post) int {
 	return len(uniqueIpHashes)
 }
 
+func isAdmin(r *http.Request) bool {
+	isAdmin := false
+	if c, err := r.Cookie("comfy_admin"); err == nil {
+		isAdmin = util.IsAdminSessionValid(c.Value)
+	}
+	return isAdmin
+}
+
 func main() {
 	// -----------------
 	// SETUP
@@ -70,7 +78,7 @@ func main() {
 	// -----------------
 
 	// INDEX PAGE
-	r.With(util.AdminOnlyMiddleware).Get("/", func(w http.ResponseWriter, r *http.Request) {
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		views.Index().Render(r.Context(), w)
 	})
 
@@ -85,7 +93,7 @@ func main() {
 			return
 		}
 
-		views.Board(board).Render(r.Context(), w)
+		views.Board(board, isAdmin(r)).Render(r.Context(), w)
 	})
 
 	// THREAD PAGE
@@ -365,7 +373,7 @@ func main() {
 			})
 		}
 
-		views.ThreadsCatalog(previews).Render(r.Context(), w)
+		views.ThreadsCatalog(previews, isAdmin(r)).Render(r.Context(), w)
 	})
 
 	// THREAD POSTS
@@ -408,12 +416,12 @@ func main() {
 	// ADMIN ROUTES (htmx)
 	// -----------------
 
-	r.Get("/admin/login", func(w http.ResponseWriter, r *http.Request) {
+	r.Get("/login", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(util.AdminSessions)
 		admin.AdminLogin().Render(r.Context(), w)
 	})
 
-	r.Post("/admin/login", func(w http.ResponseWriter, r *http.Request) {
+	r.Post("/login", func(w http.ResponseWriter, r *http.Request) {
 		username := r.FormValue("username")
 		password := r.FormValue("password")
 
@@ -453,22 +461,7 @@ func main() {
 
 	})
 
-	r.Post("/admin/logout", func(w http.ResponseWriter, r *http.Request) {
-		if c, err := r.Cookie("comfy_admin"); err == nil {
-			util.DeleteAdminSession(c.Value)
-		}
-		http.SetCookie(w, &http.Cookie{
-			Name:     "comfy_admin",
-			Value:    "",
-			HttpOnly: true,
-			Secure:   !dev,
-			Expires:  time.Now(),
-			SameSite: http.SameSiteStrictMode,
-			Path:     "/",
-		})
-	})
-
-	r.Get("/admin/me", func(w http.ResponseWriter, r *http.Request) {
+	r.Get("/authorized", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 
 		if c, err := r.Cookie("comfy_admin"); err == nil && util.IsAdminSessionValid(c.Value) {
@@ -476,6 +469,25 @@ func main() {
 		} else {
 			w.Write([]byte("false"))
 		}
+	})
+
+	r.Route("/admin", func(r chi.Router) {
+		r.Use(util.AdminOnlyMiddleware)
+
+		r.Post("/logout", func(w http.ResponseWriter, r *http.Request) {
+			if c, err := r.Cookie("comfy_admin"); err == nil {
+				util.DeleteAdminSession(c.Value)
+			}
+			http.SetCookie(w, &http.Cookie{
+				Name:     "comfy_admin",
+				Value:    "",
+				HttpOnly: true,
+				Secure:   !dev,
+				Expires:  time.Now(),
+				SameSite: http.SameSiteStrictMode,
+				Path:     "/",
+			})
+		})
 	})
 
 	// -----------------
