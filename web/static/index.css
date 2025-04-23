@@ -277,6 +277,24 @@ body {
     color: #D00;
 }
 
+/* ADMIN */
+
+
+.admin-login-container {
+    width: max-content;
+    margin: auto;
+    margin-top: 32px;
+}
+
+#adminLoginForm form {
+    margin: auto;
+}
+
+#adminLoginForm button {
+    display: block;
+    margin-left: auto;
+}
+
 /* GENERAL LAYOUT */
 
 .container {

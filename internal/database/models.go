@@ -28,3 +28,8 @@ type Post struct {
 	IpHash    string
 	Number    int
 }
+
+type Admin struct {
+	Username string
+	Password string
+}

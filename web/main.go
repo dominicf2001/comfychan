@@ -16,9 +16,11 @@ import (
 	"github.com/dominicf2001/comfychan/internal/database"
 	"github.com/dominicf2001/comfychan/internal/util"
 	"github.com/dominicf2001/comfychan/web/views"
+	"github.com/dominicf2001/comfychan/web/views/admin"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/mattn/go-sqlite3"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var dev = true
@@ -324,7 +326,7 @@ func main() {
 	// -----------------
 
 	// -----------------
-	// PARTIALS (htmx)
+	// PARTIAL ROUTES (htmx)
 	// -----------------
 
 	// CATALOG
@@ -398,6 +400,82 @@ func main() {
 
 		// dont pass the op post. only replies
 		views.Posts(posts, thread).Render(r.Context(), w)
+	})
+
+	// -----------------
+
+	// -----------------
+	// ADMIN ROUTES (htmx)
+	// -----------------
+
+	r.Get("/admin/login", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println(util.AdminSessions)
+		admin.AdminLogin().Render(r.Context(), w)
+	})
+
+	r.Post("/admin/login", func(w http.ResponseWriter, r *http.Request) {
+		username := r.FormValue("username")
+		password := r.FormValue("password")
+
+		admin, err := database.GetAdmin(db, username)
+		if err != nil {
+			http.Error(w, "Invalid login", http.StatusUnauthorized)
+			return
+		}
+
+		err = bcrypt.CompareHashAndPassword([]byte(admin.Password), []byte(password))
+		if err != nil {
+			http.Error(w, "Invalid login", http.StatusUnauthorized)
+			return
+		}
+
+		token, err := util.GenToken()
+		if err != nil {
+			http.Error(w, "Failed to generate token", http.StatusInternalServerError)
+			return
+		}
+
+		tokenValidUntil := time.Now().Add(time.Hour)
+		util.CreateAdminSession(token, util.AdminSession{
+			Username:   username,
+			Expiration: tokenValidUntil,
+		})
+
+		http.SetCookie(w, &http.Cookie{
+			Name:     "comfy_admin",
+			Value:    token,
+			HttpOnly: true,
+			Secure:   !dev,
+			Expires:  tokenValidUntil,
+			SameSite: http.SameSiteStrictMode,
+			Path:     "/",
+		})
+
+	})
+
+	r.Post("/admin/logout", func(w http.ResponseWriter, r *http.Request) {
+		if c, err := r.Cookie("comfy_admin"); err == nil {
+			util.DeleteAdminSession(c.Value)
+		}
+		http.SetCookie(w, &http.Cookie{
+			Name:     "comfy_admin",
+			Value:    "",
+			HttpOnly: true,
+			Secure:   !dev,
+			Expires:  time.Now(),
+			SameSite: http.SameSiteStrictMode,
+			Path:     "/",
+		})
+	})
+
+	r.Get("/admin/me", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+
+		if c, err := r.Cookie("comfy_admin"); err == nil && util.IsAdminSessionValid(c.Value) {
+			w.Write([]byte("true"))
+		} else {
+			w.Write([]byte("false"))
+		}
 	})
 
 	// -----------------

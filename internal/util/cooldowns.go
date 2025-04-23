@@ -15,7 +15,7 @@ var (
 	ThreadCooldowns = make(map[string]time.Time)
 )
 
-var CooldownMutex sync.Mutex
+var CooldownMutex sync.RWMutex
 
 const POST_COOLDOWN = 15 * time.Second
 
@@ -26,10 +26,9 @@ const THREAD_COOLDOWN = 2 * time.Minute
 // const THREAD_COOLDOWN = 0 * time.Minute
 
 func GetRemainingCooldown(ip string, m map[string]time.Time, duration time.Duration) time.Duration {
-	CooldownMutex.Lock()
-	defer CooldownMutex.Unlock()
-
+	CooldownMutex.RLock()
 	last, exists := m[ip]
+	CooldownMutex.RUnlock()
 	if !exists {
 		return 0
 	}

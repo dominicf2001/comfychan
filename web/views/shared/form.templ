@@ -14,7 +14,6 @@ templ NewPostForm(board database.Board, endpoint string, isForThread bool) {
 		hx-post={ endpoint }
 		_="
 			on htmx:beforeRequest toggle @disabled on <button/> until htmx:afterRequest
-
 			on htmx:afterRequest
 			  if isHttpWarningStatus(event.detail.xhr.status)
 				show #newPostWarning

@@ -33,6 +33,12 @@ CREATE TABLE IF NOT EXISTS posts (
     FOREIGN KEY (thread_id) REFERENCES threads(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS admins (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL,
+    password TEXT NOT NULL
+);
+
 -- ======================
 -- Seed data
 -- ======================
@@ -42,3 +48,6 @@ CREATE TABLE IF NOT EXISTS posts (
 INSERT INTO boards (slug, name, tag) VALUES 
     ('comfy', 'Comfy', 'Be comfy, fren'),
     ('g', 'Technology', 'Beep boop');
+
+INSERT INTO admins (username, password) VALUES
+    ('admin', '$2a$10$vRP4/9O6SwyUziEUtBLQM.r9C2WujIIZ6yEgqGjhlBaFPvtpfdHPC');

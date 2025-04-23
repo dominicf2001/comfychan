@@ -259,3 +259,17 @@ func DeleteThread(db Queryer, threadId int) error {
 
 	return nil
 }
+
+func GetAdmin(db *sql.DB, username string) (Admin, error) {
+	row := db.QueryRow(`
+		SELECT username, password
+		FROM admins
+		WHERE username = ?`, username)
+
+	var result Admin
+	if err := row.Scan(&result.Username, &result.Password); err != nil {
+		return Admin{}, nil
+	}
+
+	return result, nil
+}
