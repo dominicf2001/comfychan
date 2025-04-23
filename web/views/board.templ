@@ -52,13 +52,19 @@ templ Board(board database.Board, isAdmin bool) {
 type CatalogThreadPreview struct {
 	Subject    string
 	Body       string
+	ThreadId   int
 	ThreadURL  string
 	ThumbPath  string
 	ReplyCount int
 	IpCount    int
 }
 
-templ ThreadsCatalog(previews []CatalogThreadPreview, isAdmin bool) {
+type CatalogContext struct {
+	IsAdmin   bool
+	BoardSlug string
+}
+
+templ ThreadsCatalog(previews []CatalogThreadPreview, catalogContext CatalogContext) {
 	<div id="catalog">
 		for _, preview := range previews {
 			{{ replyCount := strconv.FormatInt(int64(preview.ReplyCount), 10) }}
@@ -79,8 +85,12 @@ templ ThreadsCatalog(previews []CatalogThreadPreview, isAdmin bool) {
 				<p>
 					@templ.Raw(util.EnrichPost(preview.Body))
 				</p>
-				if isAdmin {
-					<button>X</button>
+				if catalogContext.IsAdmin {
+					<button
+						hx-delete={ fmt.Sprintf("/admin/%s/threads/%d", catalogContext.BoardSlug, preview.ThreadId) }
+						hx-swap="none"
+						_="on htmx:afterRequest trigger refreshPosts on body"
+					>X</button>
 				}
 			</div>
 		}

@@ -95,3 +95,7 @@ function applyCatalogSearch() {
         }
     }
 }
+
+function currentBoardSlug() {
+    return window.location.pathname.split("/")[1] || "";
+}

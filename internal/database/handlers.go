@@ -2,6 +2,8 @@ package database
 
 import (
 	"database/sql"
+	"errors"
+	"io/fs"
 	"os"
 	"path"
 
@@ -223,7 +225,7 @@ func PutPost(db Queryer, boardSlug string, threadId int, body string, mediaPath 
 func DeleteThread(db Queryer, threadId int) error {
 	// cleanup images
 	rows, err := db.Query(`
-		SELECT media_path 
+		SELECT media_path, thumb_path
 		FROM posts
 		WHERE thread_id = ?`, threadId)
 	if err != nil {
@@ -231,21 +233,24 @@ func DeleteThread(db Queryer, threadId int) error {
 	}
 	defer rows.Close()
 
-	var pruneMediaPaths []string
 	for rows.Next() {
-		var pruneMediaPath string
-		if err := rows.Scan(&pruneMediaPath); err != nil {
+		var (
+			pruneMediaThumbPath string
+			pruneMediaFullPath  string
+		)
+		if err := rows.Scan(&pruneMediaFullPath, &pruneMediaThumbPath); err != nil {
 			return err
 		}
-		pruneMediaPaths = append(pruneMediaPaths, pruneMediaPath)
-	}
 
-	for _, pruneMediaPath := range pruneMediaPaths {
-		if err := os.Remove(path.Join(util.POST_MEDIA_FULL_PATH, pruneMediaPath)); err != nil && !os.IsNotExist(err) {
-			return err
+		if err := os.Remove(path.Join(util.POST_MEDIA_FULL_PATH, pruneMediaFullPath)); err != nil {
+			if !errors.Is(err, fs.ErrNotExist) {
+				return err
+			}
 		}
-		if err := os.Remove(path.Join(util.POST_MEDIA_THUMB_PATH, pruneMediaPath)); err != nil && !os.IsNotExist(err) {
-			return err
+		if err := os.Remove(path.Join(util.POST_MEDIA_THUMB_PATH, pruneMediaThumbPath)); err != nil {
+			if !errors.Is(err, fs.ErrNotExist) {
+				return err
+			}
 		}
 	}
 

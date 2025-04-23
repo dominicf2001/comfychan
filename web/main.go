@@ -154,7 +154,7 @@ func main() {
 
 		// check cooldown
 		timeRemaining := util.GetRemainingCooldown(ip, util.ThreadCooldowns, util.THREAD_COOLDOWN)
-		if timeRemaining > 0 {
+		if timeRemaining > 0 && !isAdmin(r) {
 			response := fmt.Sprintf("Please wait %.0f seconds", timeRemaining.Seconds())
 			io.Copy(io.Discard, r.Body)
 			http.Error(w, response, http.StatusTooManyRequests)
@@ -247,7 +247,7 @@ func main() {
 
 		// check cooldown
 		timeRemaining := util.GetRemainingCooldown(ip, util.PostCooldowns, util.POST_COOLDOWN)
-		if timeRemaining > 0 {
+		if timeRemaining > 0 && !isAdmin(r) {
 			response := fmt.Sprintf("Please wait %.0f seconds", timeRemaining.Seconds())
 			io.Copy(io.Discard, r.Body)
 			http.Error(w, response, http.StatusTooManyRequests)
@@ -377,6 +377,7 @@ func main() {
 			previews = append(previews, views.CatalogThreadPreview{
 				Subject:    thread.Subject,
 				Body:       op.Body,
+				ThreadId:   thread.Id,
 				ThreadURL:  fmt.Sprintf("/%s/threads/%d", slug, thread.Id),
 				ThumbPath:  op.ThumbPath,
 				ReplyCount: len(posts),
@@ -384,7 +385,10 @@ func main() {
 			})
 		}
 
-		views.ThreadsCatalog(previews, isAdmin(r)).Render(r.Context(), w)
+		views.ThreadsCatalog(previews, views.CatalogContext{
+			IsAdmin:   isAdmin(r),
+			BoardSlug: slug,
+		}).Render(r.Context(), w)
 	})
 
 	// THREAD POSTS
@@ -498,6 +502,23 @@ func main() {
 				Path:     "/",
 			})
 		})
+
+		r.Delete("/{slug}/threads/{threadId}", func(w http.ResponseWriter, r *http.Request) {
+			// slug := chi.URLParam(r, "slug")
+			threadIdStr := chi.URLParam(r, "threadId")
+			threadId, err := strconv.Atoi(threadIdStr)
+			if err != nil {
+				http.Error(w, "Invalid thread id", http.StatusBadRequest)
+				return
+			}
+
+			err = database.DeleteThread(db, threadId)
+			if err != nil {
+				log.Println("DeleteThread: %v", err)
+				http.Error(w, "Error deleting thread: "+threadIdStr, http.StatusInternalServerError)
+			}
+		})
+
 	})
 
 	// -----------------
