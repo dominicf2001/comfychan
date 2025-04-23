@@ -29,7 +29,13 @@ func AdminOnlyMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c, err := r.Cookie("comfy_admin")
 		if err != nil || !util.IsAdminSessionValid(c.Value) {
-			http.Redirect(w, r, "/authorize", http.StatusSeeOther)
+			// Check if it's an HTMX request
+			if r.Header.Get("HX-Request") == "true" {
+				w.Header().Set("HX-Redirect", "/authorize")
+				w.WriteHeader(http.StatusOK)
+			} else {
+				http.Redirect(w, r, "/authorize", http.StatusSeeOther)
+			}
 			return
 		}
 		next.ServeHTTP(w, r)
