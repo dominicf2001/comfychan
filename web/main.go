@@ -165,7 +165,7 @@ func main() {
 		body := strings.TrimSpace(r.FormValue("body"))
 
 		if len(subject) > util.MAX_SUBJECT_LEN {
-			http.Error(w, fmt.Sprintf("Subject exceeds %d characters", util.MAX_BODY_LEN), http.StatusBadRequest)
+			http.Error(w, fmt.Sprintf("Subject exceeds %d characters", util.MAX_SUBJECT_LEN), http.StatusBadRequest)
 			return
 		}
 

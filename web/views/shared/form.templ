@@ -3,7 +3,6 @@ package shared
 import "github.com/dominicf2001/comfychan/internal/database"
 import "strings"
 import "github.com/dominicf2001/comfychan/internal/util"
-import "strconv"
 
 templ NewPostForm(board database.Board, endpoint string, isForThread bool) {
 	<div style="display: none;" id="newPostWarning" class="warning"></div>
@@ -37,11 +36,11 @@ templ NewPostForm(board database.Board, endpoint string, isForThread bool) {
 					class="new-post-form-field"
 				>
 					<th>Subject</th>
-					<td><input maxlength={ strconv.Itoa(util.MAX_SUBJECT_LEN) } id="newPostSubject" name="subject"/></td>
+					<td><input id="newPostSubject" name="subject"/></td>
 				</tr>
 				<tr class="new-post-form-field">
 					<th>Comment</th>
-					<td><textarea maxlength={ strconv.Itoa(util.MAX_BODY_LEN) } id="newPostBody" name="body" required></textarea></td>
+					<td><textarea id="newPostBody" name="body" required></textarea></td>
 				</tr>
 				<tr class="new-post-form-field">
 					<th>File</th>
