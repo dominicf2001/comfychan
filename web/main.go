@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -142,6 +143,16 @@ func main() {
 		// parse form
 		r.Body = http.MaxBytesReader(w, r.Body, util.MAX_REQUEST_BYTES)
 		if err := r.ParseMultipartForm(util.FILE_MEM_LIMIT); err != nil {
+			var maxErr *http.MaxBytesError
+			if errors.As(err, &maxErr) {
+				http.Error(w, fmt.Sprintf("File too large (max %s)", util.FormatBytes(util.FILE_MEM_LIMIT)), http.StatusRequestEntityTooLarge)
+				return
+			}
+
+			if errors.Is(err, multipart.ErrMessageTooLarge) {
+				http.Error(w, fmt.Sprintf("File too large (max %s)", util.FormatBytes(util.FILE_MEM_LIMIT)), http.StatusRequestEntityTooLarge)
+				return
+			}
 			http.Error(w, "Failed to parse form", http.StatusBadRequest)
 			log.Printf("ParseMultipartForm: %v", err)
 			return
@@ -175,19 +186,7 @@ func main() {
 		defer file.Close()
 
 		if header.Size > util.FILE_MEM_LIMIT {
-			http.Error(w, "File too large (max 10 MB)", http.StatusRequestEntityTooLarge)
-			return
-		}
-
-		isMediaTooLarge, err := util.IsMediaTooLarge(file)
-		if err != nil {
-			http.Error(w, "Failed to detect if file is too large", http.StatusInternalServerError)
-			return
-		}
-		file.Seek(0, io.SeekStart)
-
-		if isMediaTooLarge {
-			http.Error(w, "File too large (max 10MB)", http.StatusRequestEntityTooLarge)
+			http.Error(w, fmt.Sprintf("File too large (max %s)", util.FormatBytes(util.FILE_MEM_LIMIT)), http.StatusRequestEntityTooLarge)
 			return
 		}
 
@@ -237,6 +236,16 @@ func main() {
 		// parse form
 		r.Body = http.MaxBytesReader(w, r.Body, util.MAX_REQUEST_BYTES)
 		if err := r.ParseMultipartForm(util.FILE_MEM_LIMIT); err != nil {
+			var maxErr *http.MaxBytesError
+			if errors.As(err, &maxErr) {
+				http.Error(w, fmt.Sprintf("File too large (max %s)", util.FormatBytes(util.FILE_MEM_LIMIT)), http.StatusRequestEntityTooLarge)
+				return
+			}
+
+			if errors.Is(err, multipart.ErrMessageTooLarge) {
+				http.Error(w, fmt.Sprintf("File too large (max %s)", util.FormatBytes(util.FILE_MEM_LIMIT)), http.StatusRequestEntityTooLarge)
+				return
+			}
 			http.Error(w, "Failed to parse form", http.StatusBadRequest)
 			log.Printf("ParseMultipartForm: %v", err)
 			return
@@ -268,19 +277,7 @@ func main() {
 			defer file.Close()
 
 			if header.Size > util.FILE_MEM_LIMIT {
-				http.Error(w, "File too large (max 10 MB)", http.StatusRequestEntityTooLarge)
-				return
-			}
-
-			isMediaTooLarge, err := util.IsMediaTooLarge(file)
-			if err != nil {
-				http.Error(w, "Failed to detect if file is too large", http.StatusInternalServerError)
-				return
-			}
-			file.Seek(0, io.SeekStart)
-
-			if isMediaTooLarge {
-				http.Error(w, "File too large (max 5MB)", http.StatusRequestEntityTooLarge)
+				http.Error(w, fmt.Sprintf("File too large (max %s)", util.FormatBytes(util.FILE_MEM_LIMIT)), http.StatusRequestEntityTooLarge)
 				return
 			}
 

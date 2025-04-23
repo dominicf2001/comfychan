@@ -261,17 +261,3 @@ func FormatFileInfo(fileInfo PostFileInfo) string {
 	}
 	return fmt.Sprintf("(%s, %dx%d)", humanSize, fileInfo.Width, fileInfo.Height)
 }
-
-func IsMediaTooLarge(file multipart.File) (bool, error) {
-	limitedReader := io.LimitReader(file, FILE_MEM_LIMIT+1)
-	fileBytes, err := io.ReadAll(limitedReader)
-	if err != nil {
-		return true, err
-	}
-
-	if int64(len(fileBytes)) > FILE_MEM_LIMIT {
-		return true, nil
-	}
-
-	return false, nil
-}
