@@ -150,7 +150,9 @@ func main() {
 			return
 		}
 
-		views.Thread(board, thread, posts).Render(r.Context(), w)
+		views.Thread(board, thread, posts, views.ThreadContext{
+			IsAdmin: isAdmin(r),
+		}).Render(r.Context(), w)
 	})
 
 	// CREATE THREAD
@@ -428,7 +430,9 @@ func main() {
 		}
 
 		// dont pass the op post. only replies
-		views.Posts(posts, thread).Render(r.Context(), w)
+		views.Posts(posts, thread, views.ThreadContext{
+			IsAdmin: isAdmin(r),
+		}).Render(r.Context(), w)
 	})
 
 	// -----------------
@@ -509,8 +513,7 @@ func main() {
 			})
 		})
 
-		r.Delete("/{slug}/threads/{threadId}", func(w http.ResponseWriter, r *http.Request) {
-			// slug := chi.URLParam(r, "slug")
+		r.Delete("/threads/{threadId}", func(w http.ResponseWriter, r *http.Request) {
 			threadIdStr := chi.URLParam(r, "threadId")
 			threadId, err := strconv.Atoi(threadIdStr)
 			if err != nil {
@@ -520,11 +523,27 @@ func main() {
 
 			err = database.DeleteThread(db, threadId)
 			if err != nil {
-				log.Println("DeleteThread: %v", err)
-				http.Error(w, "Error deleting thread: "+threadIdStr, http.StatusInternalServerError)
+				log.Println("DeleteThread: ", err)
+				http.Error(w, "Failed to delete thread: "+threadIdStr, http.StatusInternalServerError)
+				return
 			}
 		})
 
+		r.Delete("/posts/{postId}", func(w http.ResponseWriter, r *http.Request) {
+			postIdStr := chi.URLParam(r, "postId")
+			postId, err := strconv.Atoi(postIdStr)
+			if err != nil {
+				http.Error(w, "Invalid post id", http.StatusBadRequest)
+				return
+			}
+
+			err = database.DeletePost(db, postId)
+			if err != nil {
+				log.Println("DeletePost: ", err)
+				http.Error(w, "Failed to delete post: "+postIdStr, http.StatusInternalServerError)
+				return
+			}
+		})
 	})
 
 	// -----------------

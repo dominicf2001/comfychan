@@ -242,14 +242,18 @@ func DeleteThread(db Queryer, threadId int) error {
 			return err
 		}
 
-		if err := os.Remove(path.Join(util.POST_MEDIA_FULL_PATH, pruneMediaFullPath)); err != nil {
-			if !errors.Is(err, fs.ErrNotExist) {
-				return err
+		if pruneMediaFullPath != "" {
+			if err := os.Remove(path.Join(util.POST_MEDIA_FULL_PATH, pruneMediaFullPath)); err != nil {
+				if !errors.Is(err, fs.ErrNotExist) {
+					return err
+				}
 			}
 		}
-		if err := os.Remove(path.Join(util.POST_MEDIA_THUMB_PATH, pruneMediaThumbPath)); err != nil {
-			if !errors.Is(err, fs.ErrNotExist) {
-				return err
+		if pruneMediaThumbPath != "" {
+			if err := os.Remove(path.Join(util.POST_MEDIA_THUMB_PATH, pruneMediaThumbPath)); err != nil {
+				if !errors.Is(err, fs.ErrNotExist) {
+					return err
+				}
 			}
 		}
 	}
@@ -258,6 +262,48 @@ func DeleteThread(db Queryer, threadId int) error {
 	_, err = db.Exec(`
 		DELETE FROM threads
 		WHERE id = ?`, threadId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func DeletePost(db *sql.DB, postId int) error {
+	// cleanup images
+	row := db.QueryRow(`
+		SELECT media_path, thumb_path
+		FROM posts
+		WHERE id = ?`, postId)
+
+	var (
+		pruneMediaThumbPath string
+		pruneMediaFullPath  string
+	)
+	if err := row.Scan(&pruneMediaFullPath, &pruneMediaThumbPath); err != nil {
+		return err
+	}
+
+	if pruneMediaFullPath != "" {
+		if err := os.Remove(path.Join(util.POST_MEDIA_FULL_PATH, pruneMediaFullPath)); err != nil {
+			if !errors.Is(err, fs.ErrNotExist) {
+				return err
+			}
+		}
+	}
+
+	if pruneMediaThumbPath != "" {
+		if err := os.Remove(path.Join(util.POST_MEDIA_THUMB_PATH, pruneMediaThumbPath)); err != nil {
+			if !errors.Is(err, fs.ErrNotExist) {
+				return err
+			}
+		}
+	}
+
+	// delete post
+	_, err := db.Exec(`
+		DELETE FROM posts 
+		WHERE id = ?`, postId)
 	if err != nil {
 		return err
 	}

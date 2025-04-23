@@ -105,7 +105,7 @@ templ ThreadsCatalog(previews []CatalogThreadPreview, catalogContext CatalogCont
 					<h1>{ elThreadId }</h1>
 					<button
 						class="link-button"
-						hx-delete={ fmt.Sprintf("/admin/%s/threads/%d", catalogContext.BoardSlug, preview.ThreadId) }
+						hx-delete={ fmt.Sprintf("/admin/threads/%d", preview.ThreadId) }
 						hx-swap="none"
 						_="on htmx:afterRequest trigger refreshPosts on body"
 						hx-confirm="Are you sure you wish to delete this thread?"

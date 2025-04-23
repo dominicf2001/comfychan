@@ -30,7 +30,7 @@ const MAX_THREAD_COUNT = 50
 const MAX_BODY_LEN = 3000
 const MAX_SUBJECT_LEN = 50
 
-var SUPPORTED_IMAGE_MIME_TYPES = []string{"image/jpeg", "image/png", "image/gif", "image/webp"}
+var SUPPORTED_IMAGE_MIME_TYPES = []string{"image/jpeg", "image/png", "image/gif"}
 var SUPPORTED_VIDEO_MIME_TYPES = []string{"video/webm", "video/mp4", "video/ogg"}
 
 type PostMediaType int64

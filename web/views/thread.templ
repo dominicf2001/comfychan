@@ -8,7 +8,28 @@ import (
 	"strconv"
 )
 
-templ PostOriginal(post database.Post, thread *database.Thread) {
+templ PostAdminDialog(post database.Post) {
+	{{ elPostId := fmt.Sprintf("post-%d", post.Id) }}
+	<dialog
+		id={ elPostId + "-dialog" }
+		class="admin-dialog"
+	>
+		<h1>{ elPostId }</h1>
+		<button
+			class="link-button"
+			hx-delete={ fmt.Sprintf("/admin/posts/%d", post.Id) }
+			hx-swap="none"
+			_="on htmx:afterRequest trigger refreshPosts on body"
+			hx-confirm="Are you sure you wish to delete this post?"
+		>Delete</button>
+		<button
+			class="admin-dialog-close-btn link-button"
+			_={ fmt.Sprintf("on click call #%s-dialog.close()", elPostId) }
+		>Close</button>
+	</dialog>
+}
+
+templ PostOriginal(post database.Post, thread database.Thread) {
 	<article id={ fmt.Sprintf("post-%d", post.Number) } class="post-op">
 		<div>
 			<span
@@ -53,9 +74,20 @@ templ PostOriginal(post database.Post, thread *database.Thread) {
 	</article>
 }
 
-templ PostReply(post database.Post) {
+templ PostReply(post database.Post, threadContext ThreadContext) {
+	{{ elPostId := fmt.Sprintf("post-%d", post.Id) }}
 	<article id={ fmt.Sprintf("post-%d", post.Number) } class="post">
 		<header class="post-header">
+			if threadContext.IsAdmin {
+				<span
+					id={ fmt.Sprintf("%s-admintoggle", elPostId) }
+					class="link-button"
+					style="float: left;"
+					_={ fmt.Sprintf(`on click call #%s-dialog.showModal()`, elPostId) }
+				>
+					M
+				</span>
+			}
 			<span class="post-author">{ post.Author }</span>
 			<span class="post-date">{ post.CreatedAt.Format("01/02/2006") }</span>
 			<span class="post-time">{ post.CreatedAt.Format("15:04") }</span>
@@ -99,20 +131,25 @@ templ PostReply(post database.Post) {
 		<p class="post-body">
 			@templ.Raw(util.EnrichPost(post.Body))
 		</p>
+		@PostAdminDialog(post)
 	</article>
 }
 
-templ Posts(posts []database.Post, thread database.Thread) {
-	@PostOriginal(posts[0], &thread)
+templ Posts(posts []database.Post, thread database.Thread, threadContext ThreadContext) {
+	@PostOriginal(posts[0], thread)
 	<div>
 		for _, post := range (posts[1:]) {
-			@PostReply(post)
+			@PostReply(post, threadContext)
 			<br/>
 		}
 	</div>
 }
 
-templ Thread(board database.Board, thread database.Thread, posts []database.Post) {
+type ThreadContext struct {
+	IsAdmin bool
+}
+
+templ Thread(board database.Board, thread database.Thread, posts []database.Post, threadContext ThreadContext) {
 	@shared.Layout() {
 		<script src="/static/thread.js" defer></script>
 		@BoardHeader(board)
@@ -131,7 +168,7 @@ templ Thread(board database.Board, thread database.Thread, posts []database.Post
 			hx-trigger="refreshPosts from:body"
 			_="on htmx:afterSwap call insertHeaderReplies()"
 		>
-			@Posts(posts, thread)
+			@Posts(posts, thread, threadContext)
 		</div>
 	}
 }
