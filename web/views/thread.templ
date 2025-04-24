@@ -93,6 +93,14 @@ templ PostOriginal(post database.Post, thread database.Thread) {
 		/>
 		<video controls style="display: none;" class="post-vid"></video>
 		<header style="margin-top: 10px;" class="post-header">
+			<span style="float: left;">
+				if thread.Locked {
+					<img src="/static/media/icons/lock.svg" alt="Locked" class="icon"/>
+				}
+				if thread.Pinned {
+					<img src="/static/media/icons/pin.svg" alt="Pinned" class="icon"/>
+				}
+			</span>
 			<h1 class="thread-subject">{ thread.Subject } -</h1>
 			<span class="post-author">{ post.Author }</span>
 			<span class="post-date">{ post.CreatedAt.Format("01/02/2006") }</span>

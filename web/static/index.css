@@ -201,6 +201,26 @@ body {
     margin: 2rem;
 }
 
+.thread-title {
+    position: relative;
+    display: inline-block;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.thread-icons {
+    position: absolute;
+    right: 100%;
+    margin-right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+}
+
+.thread-icons .icon {
+    margin-left: 2px;
+}
+
 .thread-subject {
     font-weight: bold;
     color: var(--link-primary);
@@ -407,6 +427,16 @@ body {
 
 .link-button:hover {
     color: var(--danger);
+}
+
+.icon {
+    width: 12px;
+    height: 12px;
+    vertical-align: middle;
+}
+
+.icon:not(:last-child) {
+    margin-right: 2px;
 }
 
 hr {

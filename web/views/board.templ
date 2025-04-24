@@ -95,14 +95,18 @@ templ ThreadsCatalog(previews []CatalogThreadPreview, catalogContext CatalogCont
 						</span>
 					}
 				</strong>
-				<h1>
-					<a href={ templ.URL(preview.ThreadURL) } class="catalog-preview-link">{ preview.Subject }</a>
-					if preview.Locked {
-						<span>Locked</span>
-					}
-					if preview.Pinned {
-						<span>Pinned</span>
-					}
+				<h1 class="thread-title">
+					<span class="thread-icons">
+						if preview.Locked {
+							<img src="/static/media/icons/lock.svg" alt="Locked" class="icon"/>
+						}
+						if preview.Pinned {
+							<img src="/static/media/icons/pin.svg" alt="Pinned" class="icon"/>
+						}
+					</span>
+					<a href={ templ.URL(preview.ThreadURL) } class="catalog-preview-link">
+						{ preview.Subject }
+					</a>
 				</h1>
 				<p>
 					@templ.Raw(util.EnrichPost(preview.Body))
