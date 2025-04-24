@@ -27,6 +27,7 @@ type Post struct {
 	ThumbPath string
 	IpHash    string
 	Number    int
+	Banned    bool
 }
 
 type Admin struct {

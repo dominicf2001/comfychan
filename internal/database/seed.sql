@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS posts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     thread_id INTEGER NOT NULL,
     number INTEGER NOT NULL ,
+    banned BOOLEAN NOT NULL DEFAULT 0,
     author TEXT DEFAULT 'Anonymous',
     body TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -37,6 +38,13 @@ CREATE TABLE IF NOT EXISTS admins (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL,
     password TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS bans (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ip_hash TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    expiration DATETIME NOT NULL 
 );
 
 -- ======================

@@ -544,6 +544,46 @@ func main() {
 				return
 			}
 		})
+
+		// bans the ip stored in the post id
+		r.Post("/ban/{postId}", func(w http.ResponseWriter, r *http.Request) {
+			postIdStr := chi.URLParam(r, "postId")
+			postId, err := strconv.Atoi(postIdStr)
+			if err != nil {
+				http.Error(w, "Invalid post id", http.StatusBadRequest)
+				return
+			}
+
+			_, err = db.Exec(`UPDATE posts SET banned = 1 WHERE id = ?`, postId)
+			if err != nil {
+				http.Error(w, "Failed update post to banned", http.StatusInternalServerError)
+				return
+			}
+
+			post, err := database.GetPost(db, postId)
+			if err != nil {
+				log.Println("GetPost: ", err)
+				http.Error(w, "Failed to get post: "+postIdStr, http.StatusInternalServerError)
+				return
+			}
+
+			ipToBan := post.IpHash
+			reason := r.FormValue("reason")
+
+			expirationInput := r.FormValue("expiration")
+			expiration, err := time.Parse("2006-01-02T15:04", expirationInput)
+			if err != nil {
+				http.Error(w, "Invalid expiration datetime value", http.StatusBadRequest)
+				return
+			}
+
+			err = database.BanIp(db, ipToBan, reason, expiration)
+			if err != nil {
+				log.Println("BanIp: ", err)
+				http.Error(w, "Failed to ban ip: ", http.StatusInternalServerError)
+				return
+			}
+		})
 	})
 
 	// -----------------

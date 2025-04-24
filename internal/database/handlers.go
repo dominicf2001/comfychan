@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"time"
 
 	"github.com/dominicf2001/comfychan/internal/util"
 )
@@ -95,7 +96,8 @@ func GetThread(db *sql.DB, threadId int) (Thread, error) {
 
 func GetPosts(db *sql.DB, threadId int) ([]Post, error) {
 	rows, err := db.Query(`
-		SELECT id, thread_id, author, body, created_at, media_path, ip_hash, number, thumb_path 
+		SELECT id, thread_id, author, body, created_at, media_path, 
+			   ip_hash, number, thumb_path, banned 
 		FROM posts 
 		WHERE thread_id = ?`, threadId)
 
@@ -107,7 +109,9 @@ func GetPosts(db *sql.DB, threadId int) ([]Post, error) {
 	var result []Post
 	for rows.Next() {
 		var p Post
-		err := rows.Scan(&p.Id, &p.ThreadId, &p.Author, &p.Body, &p.CreatedAt, &p.MediaPath, &p.IpHash, &p.Number, &p.ThumbPath)
+		err := rows.Scan(
+			&p.Id, &p.ThreadId, &p.Author, &p.Body, &p.CreatedAt, &p.MediaPath,
+			&p.IpHash, &p.Number, &p.ThumbPath, &p.Banned)
 		if err != nil {
 			return nil, err
 		}
@@ -117,15 +121,35 @@ func GetPosts(db *sql.DB, threadId int) ([]Post, error) {
 	return result, rows.Err()
 }
 
+func GetPost(db *sql.DB, postId int) (Post, error) {
+	row := db.QueryRow(`
+		SELECT id, thread_id, author, body, created_at, media_path, 
+			   ip_hash, number, thumb_path, banned
+		FROM posts 
+		WHERE id = ?`, postId)
+
+	var r Post
+	err := row.Scan(
+		&r.Id, &r.ThreadId, &r.Author, &r.Body, &r.CreatedAt, &r.MediaPath,
+		&r.IpHash, &r.Number, &r.ThumbPath, &r.Banned)
+	if err != nil {
+		return Post{}, err
+	}
+	return r, row.Err()
+}
+
 func GetOriginalPost(db *sql.DB, threadId int) (Post, error) {
 	row := db.QueryRow(`
-		SELECT id, thread_id, author, body, created_at, media_path, ip_hash, number, thumb_path
+		SELECT id, thread_id, author, body, created_at, media_path, 
+			   ip_hash, number, thumb_path, banned
 		FROM posts 
 		WHERE thread_id = ? 
 		ORDER BY created_at ASC LIMIT 1`, threadId)
 
 	var r Post
-	err := row.Scan(&r.Id, &r.ThreadId, &r.Author, &r.Body, &r.CreatedAt, &r.MediaPath, &r.IpHash, &r.Number, &r.ThumbPath)
+	err := row.Scan(
+		&r.Id, &r.ThreadId, &r.Author, &r.Body, &r.CreatedAt, &r.MediaPath,
+		&r.IpHash, &r.Number, &r.ThumbPath, &r.Banned)
 	if err != nil {
 		return Post{}, err
 	}
@@ -323,4 +347,11 @@ func GetAdmin(db *sql.DB, username string) (Admin, error) {
 	}
 
 	return result, nil
+}
+
+func BanIp(db *sql.DB, ip string, reason string, expiration time.Time) error {
+	_, err := db.Exec(`
+		INSERT INTO bans (ip_hash, reason, expiration)
+		VALUES (?, ?, ?)`, ip, reason, expiration)
+	return err
 }

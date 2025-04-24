@@ -246,6 +246,12 @@ body {
     color: #ff0000;
 }
 
+.post-banned-message {
+    margin-top: 2px;
+    font-weight: bold;
+    color: red;
+}
+
 .greentext {
     color: #789922
 }
