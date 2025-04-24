@@ -37,7 +37,7 @@ templ Board(board database.Board, isAdmin bool) {
 				<option value="large">Large</option>
 			</select>
 			<input style="margin-left: 10px;" oninput="applyCatalogSearch()" id="catalogSearch" placeholder="Search"/>
-			<a style="margin-left: 10px;" _="on click trigger refreshPosts on body" class="link-button">[Refresh]</a>
+			<a style _="on click trigger refreshPosts on body" class="link-button">[Refresh]</a>
 		</div>
 		<hr/>
 		<div
@@ -58,6 +58,8 @@ type CatalogThreadPreview struct {
 	ThumbPath  string
 	ReplyCount int
 	IpCount    int
+	Pinned     bool
+	Locked     bool
 }
 
 type CatalogContext struct {
@@ -95,6 +97,12 @@ templ ThreadsCatalog(previews []CatalogThreadPreview, catalogContext CatalogCont
 				</strong>
 				<h1>
 					<a href={ templ.URL(preview.ThreadURL) } class="catalog-preview-link">{ preview.Subject }</a>
+					if preview.Locked {
+						<span>Locked</span>
+					}
+					if preview.Pinned {
+						<span>Pinned</span>
+					}
 				</h1>
 				<p>
 					@templ.Raw(util.EnrichPost(preview.Body))
@@ -104,6 +112,39 @@ templ ThreadsCatalog(previews []CatalogThreadPreview, catalogContext CatalogCont
 					class="admin-dialog"
 				>
 					<h1>{ elThreadId }</h1>
+					<button
+						class="link-button"
+						hx-delete={ fmt.Sprintf("/admin/threads/%d", preview.ThreadId) }
+						hx-swap="none"
+						_="on htmx:afterRequest trigger refreshPosts on body"
+						hx-confirm="Are you sure you wish to delete this thread?"
+					>Delete</button>
+					<button
+						class="link-button"
+						hx-patch={ fmt.Sprintf("/admin/threads/%d/pin?pinned=%t", preview.ThreadId, !preview.Pinned) }
+						hx-swap="none"
+						_="on htmx:afterRequest trigger refreshPosts on body"
+						hx-confirm="Are you sure you wish to toggle pin this thread?"
+					>
+						if preview.Pinned {
+							Unpin 
+						} else {
+							Pin 
+						}
+					</button>
+					<button
+						class="link-button"
+						hx-patch={ fmt.Sprintf("/admin/threads/%d/lock?locked=%t", preview.ThreadId, !preview.Locked) }
+						hx-swap="none"
+						_="on htmx:afterRequest trigger refreshPosts on body"
+						hx-confirm="Are you sure you wish to toggle lock this thread?"
+					>
+						if preview.Locked {
+							Unlock
+						} else {
+							Lock
+						}
+					</button>
 					<button
 						class="link-button"
 						hx-delete={ fmt.Sprintf("/admin/threads/%d", preview.ThreadId) }

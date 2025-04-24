@@ -428,6 +428,8 @@ func main() {
 				ThumbPath:  op.ThumbPath,
 				ReplyCount: len(posts),
 				IpCount:    len(uniqueIpHashes),
+				Pinned:     thread.Pinned,
+				Locked:     thread.Locked,
 			})
 		}
 
@@ -526,19 +528,50 @@ func main() {
 	r.Route("/admin", func(r chi.Router) {
 		r.Use(AdminOnlyMiddleware)
 
-		r.Post("/logout", func(w http.ResponseWriter, r *http.Request) {
-			if c, err := r.Cookie("comfy_admin"); err == nil {
-				util.DeleteAdminSession(c.Value)
+		r.Patch("/threads/{threadId}/lock", func(w http.ResponseWriter, r *http.Request) {
+			threadIdStr := chi.URLParam(r, "threadId")
+			threadId, err := strconv.Atoi(threadIdStr)
+			if err != nil {
+				http.Error(w, "Invalid thread id", http.StatusBadRequest)
+				return
 			}
-			http.SetCookie(w, &http.Cookie{
-				Name:     "comfy_admin",
-				Value:    "",
-				HttpOnly: true,
-				Secure:   !util.DevMode,
-				Expires:  time.Now(),
-				SameSite: http.SameSiteStrictMode,
-				Path:     "/",
-			})
+
+			lockedStr := r.URL.Query().Get("locked")
+			locked, err := strconv.ParseBool(lockedStr)
+			if err != nil {
+				http.Error(w, "Invalid values for 'locked'", http.StatusBadRequest)
+				return
+			}
+
+			_, err = db.Exec(`UPDATE threads SET locked = ? WHERE id = ?`, locked, threadId)
+			if err != nil {
+				log.Println("Updating thread 'locked': ", err)
+				http.Error(w, "Failed to lock thread: "+threadIdStr, http.StatusInternalServerError)
+				return
+			}
+		})
+
+		r.Patch("/threads/{threadId}/pin", func(w http.ResponseWriter, r *http.Request) {
+			threadIdStr := chi.URLParam(r, "threadId")
+			threadId, err := strconv.Atoi(threadIdStr)
+			if err != nil {
+				http.Error(w, "Invalid thread id", http.StatusBadRequest)
+				return
+			}
+
+			pinnedStr := r.URL.Query().Get("pinned")
+			pinned, err := strconv.ParseBool(pinnedStr)
+			if err != nil {
+				http.Error(w, "Invalid values for 'pinned'", http.StatusBadRequest)
+				return
+			}
+
+			_, err = db.Exec(`UPDATE threads SET pinned = ? WHERE id = ?`, pinned, threadId)
+			if err != nil {
+				log.Println("Updating thread 'pinned': ", err)
+				http.Error(w, "Failed to pin thread: "+threadIdStr, http.StatusInternalServerError)
+				return
+			}
 		})
 
 		r.Delete("/threads/{threadId}", func(w http.ResponseWriter, r *http.Request) {
@@ -611,6 +644,21 @@ func main() {
 				http.Error(w, "Failed to ban ip: ", http.StatusInternalServerError)
 				return
 			}
+		})
+
+		r.Post("/logout", func(w http.ResponseWriter, r *http.Request) {
+			if c, err := r.Cookie("comfy_admin"); err == nil {
+				util.DeleteAdminSession(c.Value)
+			}
+			http.SetCookie(w, &http.Cookie{
+				Name:     "comfy_admin",
+				Value:    "",
+				HttpOnly: true,
+				Secure:   !util.DevMode,
+				Expires:  time.Now(),
+				SameSite: http.SameSiteStrictMode,
+				Path:     "/",
+			})
 		})
 	})
 

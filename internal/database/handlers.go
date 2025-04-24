@@ -58,7 +58,7 @@ func GetBoard(db *sql.DB, slug string) (Board, error) {
 
 func GetThreads(db *sql.DB, boardSlug string) ([]Thread, error) {
 	rows, err := db.Query(`
-		SELECT id, board_slug, subject, created_at, bumped_at 
+		SELECT id, board_slug, subject, created_at, bumped_at, pinned, locked 
 		FROM threads 
 		WHERE board_slug = ?`, boardSlug)
 
@@ -70,7 +70,9 @@ func GetThreads(db *sql.DB, boardSlug string) ([]Thread, error) {
 	var result []Thread
 	for rows.Next() {
 		var t Thread
-		err := rows.Scan(&t.Id, &t.BoardSlug, &t.Subject, &t.CreatedAt, &t.BumpedAt)
+		err := rows.Scan(
+			&t.Id, &t.BoardSlug, &t.Subject, &t.CreatedAt, &t.BumpedAt,
+			&t.Pinned, &t.Locked)
 		if err != nil {
 			return nil, err
 		}
@@ -82,79 +84,19 @@ func GetThreads(db *sql.DB, boardSlug string) ([]Thread, error) {
 
 func GetThread(db *sql.DB, threadId int) (Thread, error) {
 	row := db.QueryRow(`
-		SELECT id, board_slug, subject, created_at, bumped_at 
+		SELECT id, board_slug, subject, created_at, bumped_at, pinned, locked 
 		FROM threads 
 		WHERE id = ?`, threadId)
 
-	var thread Thread
-	err := row.Scan(&thread.Id, &thread.BoardSlug, &thread.Subject, &thread.CreatedAt, &thread.BumpedAt)
+	var t Thread
+	err := row.Scan(
+		&t.Id, &t.BoardSlug, &t.Subject, &t.CreatedAt, &t.BumpedAt,
+		&t.Pinned, &t.Locked)
 	if err != nil {
 		return Thread{}, err
 	}
 
-	return thread, row.Err()
-}
-
-func GetPosts(db *sql.DB, threadId int) ([]Post, error) {
-	rows, err := db.Query(`
-		SELECT id, thread_id, author, body, created_at, media_path, 
-			   ip_hash, number, thumb_path, banned 
-		FROM posts 
-		WHERE thread_id = ?`, threadId)
-
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var result []Post
-	for rows.Next() {
-		var p Post
-		err := rows.Scan(
-			&p.Id, &p.ThreadId, &p.Author, &p.Body, &p.CreatedAt, &p.MediaPath,
-			&p.IpHash, &p.Number, &p.ThumbPath, &p.Banned)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, p)
-	}
-
-	return result, rows.Err()
-}
-
-func GetPost(db *sql.DB, postId int) (Post, error) {
-	row := db.QueryRow(`
-		SELECT id, thread_id, author, body, created_at, media_path, 
-			   ip_hash, number, thumb_path, banned
-		FROM posts 
-		WHERE id = ?`, postId)
-
-	var r Post
-	err := row.Scan(
-		&r.Id, &r.ThreadId, &r.Author, &r.Body, &r.CreatedAt, &r.MediaPath,
-		&r.IpHash, &r.Number, &r.ThumbPath, &r.Banned)
-	if err != nil {
-		return Post{}, err
-	}
-	return r, row.Err()
-}
-
-func GetOriginalPost(db *sql.DB, threadId int) (Post, error) {
-	row := db.QueryRow(`
-		SELECT id, thread_id, author, body, created_at, media_path, 
-			   ip_hash, number, thumb_path, banned
-		FROM posts 
-		WHERE thread_id = ? 
-		ORDER BY created_at ASC LIMIT 1`, threadId)
-
-	var r Post
-	err := row.Scan(
-		&r.Id, &r.ThreadId, &r.Author, &r.Body, &r.CreatedAt, &r.MediaPath,
-		&r.IpHash, &r.Number, &r.ThumbPath, &r.Banned)
-	if err != nil {
-		return Post{}, err
-	}
-	return r, row.Err()
+	return t, row.Err()
 }
 
 func PutThread(db *sql.DB, boardSlug string, subject string, body string, mediaPath string, thumbPath string, ip_hash string) (int, error) {
@@ -215,38 +157,6 @@ func PutThread(db *sql.DB, boardSlug string, subject string, body string, mediaP
 	return int(threadIdStr), nil
 }
 
-func PutPost(db Queryer, boardSlug string, threadId int, body string, mediaPath string, thumbPath string, ip_hash string) error {
-	row := db.QueryRow(`
-		SELECT MAX(p.number)
-		FROM posts p 
-		INNER JOIN threads t ON p.thread_id = t.id
-		WHERE t.board_slug = ?`, boardSlug)
-
-	var latestPostNumber sql.NullInt64
-	if err := row.Scan(&latestPostNumber); err != nil {
-		return err
-	}
-
-	newPostNumber := 1
-	if latestPostNumber.Valid {
-		newPostNumber = int(latestPostNumber.Int64) + 1
-	}
-
-	_, err := db.Exec(`
-		INSERT INTO posts (thread_id, body, media_path, ip_hash, number, thumb_path) 
-		VALUES (?, ?, ?, ?, ?, ?)`, threadId, body, mediaPath, ip_hash, newPostNumber, thumbPath)
-	if err != nil {
-		return err
-	}
-
-	_, err = db.Exec(`UPDATE threads SET bumped_at = CURRENT_TIMESTAMP where id = ?`, threadId)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func DeleteThread(db Queryer, threadId int) error {
 	// cleanup images
 	rows, err := db.Query(`
@@ -287,6 +197,100 @@ func DeleteThread(db Queryer, threadId int) error {
 	_, err = db.Exec(`
 		DELETE FROM threads
 		WHERE id = ?`, threadId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func GetPosts(db *sql.DB, threadId int) ([]Post, error) {
+	rows, err := db.Query(`
+		SELECT id, thread_id, author, body, created_at, media_path, 
+			   ip_hash, number, thumb_path, banned 
+		FROM posts 
+		WHERE thread_id = ?`, threadId)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var result []Post
+	for rows.Next() {
+		var p Post
+		err := rows.Scan(
+			&p.Id, &p.ThreadId, &p.Author, &p.Body, &p.CreatedAt, &p.MediaPath,
+			&p.IpHash, &p.Number, &p.ThumbPath, &p.Banned)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, p)
+	}
+
+	return result, rows.Err()
+}
+
+func GetOriginalPost(db *sql.DB, threadId int) (Post, error) {
+	row := db.QueryRow(`
+		SELECT id, thread_id, author, body, created_at, media_path, 
+			   ip_hash, number, thumb_path, banned
+		FROM posts 
+		WHERE thread_id = ? 
+		ORDER BY created_at ASC LIMIT 1`, threadId)
+
+	var r Post
+	err := row.Scan(
+		&r.Id, &r.ThreadId, &r.Author, &r.Body, &r.CreatedAt, &r.MediaPath,
+		&r.IpHash, &r.Number, &r.ThumbPath, &r.Banned)
+	if err != nil {
+		return Post{}, err
+	}
+	return r, row.Err()
+}
+
+func GetPost(db *sql.DB, postId int) (Post, error) {
+	row := db.QueryRow(`
+		SELECT id, thread_id, author, body, created_at, media_path, 
+			   ip_hash, number, thumb_path, banned
+		FROM posts 
+		WHERE id = ?`, postId)
+
+	var r Post
+	err := row.Scan(
+		&r.Id, &r.ThreadId, &r.Author, &r.Body, &r.CreatedAt, &r.MediaPath,
+		&r.IpHash, &r.Number, &r.ThumbPath, &r.Banned)
+	if err != nil {
+		return Post{}, err
+	}
+	return r, row.Err()
+}
+
+func PutPost(db Queryer, boardSlug string, threadId int, body string, mediaPath string, thumbPath string, ip_hash string) error {
+	row := db.QueryRow(`
+		SELECT MAX(p.number)
+		FROM posts p 
+		INNER JOIN threads t ON p.thread_id = t.id
+		WHERE t.board_slug = ?`, boardSlug)
+
+	var latestPostNumber sql.NullInt64
+	if err := row.Scan(&latestPostNumber); err != nil {
+		return err
+	}
+
+	newPostNumber := 1
+	if latestPostNumber.Valid {
+		newPostNumber = int(latestPostNumber.Int64) + 1
+	}
+
+	_, err := db.Exec(`
+		INSERT INTO posts (thread_id, body, media_path, ip_hash, number, thumb_path) 
+		VALUES (?, ?, ?, ?, ?, ?)`, threadId, body, mediaPath, ip_hash, newPostNumber, thumbPath)
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec(`UPDATE threads SET bumped_at = CURRENT_TIMESTAMP where id = ?`, threadId)
 	if err != nil {
 		return err
 	}
@@ -336,20 +340,6 @@ func DeletePost(db *sql.DB, postId int) error {
 	return nil
 }
 
-func GetAdmin(db *sql.DB, username string) (Admin, error) {
-	row := db.QueryRow(`
-		SELECT username, password
-		FROM admins
-		WHERE username = ?`, username)
-
-	var result Admin
-	if err := row.Scan(&result.Username, &result.Password); err != nil {
-		return Admin{}, nil
-	}
-
-	return result, nil
-}
-
 func BanIp(db *sql.DB, ipHash string, reason string, expiration time.Time) error {
 	log.Printf("IP: %s, reason: %s, expiration: %v", ipHash, reason, expiration)
 	// if the ban already exists for ip, only update if its greater than existing
@@ -392,4 +382,18 @@ func GetBan(db *sql.DB, ip string) (Ban, error) {
 	}
 
 	return r, nil
+}
+
+func GetAdmin(db *sql.DB, username string) (Admin, error) {
+	row := db.QueryRow(`
+		SELECT username, password
+		FROM admins
+		WHERE username = ?`, username)
+
+	var result Admin
+	if err := row.Scan(&result.Username, &result.Password); err != nil {
+		return Admin{}, nil
+	}
+
+	return result, nil
 }

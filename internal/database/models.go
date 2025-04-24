@@ -15,6 +15,8 @@ type Thread struct {
 	Subject   string
 	CreatedAt time.Time
 	BumpedAt  time.Time
+	Pinned    bool
+	Locked    bool
 }
 
 type Post struct {
