@@ -13,6 +13,10 @@ function isOffScreen(el) {
     );
 }
 
+function scrollToBottom() {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
+
 function isHttpWarningStatus(code) {
     const warningStatuses = [429, 400, 413];
     return warningStatuses.includes(code);

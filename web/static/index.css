@@ -389,3 +389,10 @@ hr {
     height: 0;
     clear: left;
 }
+
+footer {
+    margin-top: 50px;
+    margin-bottom: 10px;
+    font-size: 10px;
+    text-align: center;
+}
