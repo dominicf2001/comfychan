@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"io/fs"
+	"log"
 	"os"
 	"path"
 	"time"
@@ -349,9 +350,46 @@ func GetAdmin(db *sql.DB, username string) (Admin, error) {
 	return result, nil
 }
 
-func BanIp(db *sql.DB, ip string, reason string, expiration time.Time) error {
+func BanIp(db *sql.DB, ipHash string, reason string, expiration time.Time) error {
+	log.Printf("IP: %s, reason: %s, expiration: %v", ipHash, reason, expiration)
+	// if the ban already exists for ip, only update if its greater than existing
 	_, err := db.Exec(`
 		INSERT INTO bans (ip_hash, reason, expiration)
-		VALUES (?, ?, ?)`, ip, reason, expiration)
+		VALUES (?, ?, ?)
+		ON CONFLICT(ip_hash) DO UPDATE SET
+			reason = excluded.reason,
+			expiration = excluded.expiration
+		WHERE excluded.expiration > bans.expiration
+	`, ipHash, reason, expiration)
 	return err
+}
+
+var ErrBanNotFound = errors.New("ban not found")
+
+func GetBan(db *sql.DB, ip string) (Ban, error) {
+	row := db.QueryRow(`
+		SELECT ip_hash, reason, expiration 
+		FROM bans
+		where ip_hash = ?`, ip)
+
+	var r Ban
+	err := row.Scan(&r.IpHash, &r.Reason, &r.Expiration)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Ban{}, ErrBanNotFound
+		}
+		return Ban{}, err
+	}
+
+	if time.Now().After(r.Expiration) {
+		_, err := db.Exec(`
+			DELETE FROM bans
+			WHERE ip_hash = ?`, ip)
+		if err != nil {
+			return Ban{}, err
+		}
+		return Ban{}, ErrBanNotFound
+	}
+
+	return r, nil
 }

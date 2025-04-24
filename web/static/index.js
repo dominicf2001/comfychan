@@ -23,7 +23,7 @@ function smoothScrollTo(loc) {
 }
 
 function isHttpWarningStatus(code) {
-    const warningStatuses = [429, 400, 413];
+    const warningStatuses = [429, 400, 413, 403];
     return warningStatuses.includes(code);
 }
 

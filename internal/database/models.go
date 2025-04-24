@@ -34,3 +34,9 @@ type Admin struct {
 	Username string
 	Password string
 }
+
+type Ban struct {
+	IpHash     string
+	Reason     string
+	Expiration time.Time
+}

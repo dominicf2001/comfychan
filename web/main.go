@@ -49,14 +49,6 @@ func disableCacheInDevMode(next http.Handler) http.Handler {
 	})
 }
 
-func SumUniquePostIps(posts []database.Post) int {
-	uniqueIpHashes := map[string]bool{}
-	for _, post := range posts {
-		uniqueIpHashes[post.IpHash] = true
-	}
-	return len(uniqueIpHashes)
-}
-
 func isAdmin(r *http.Request) bool {
 	if util.DevMode {
 		return true
@@ -159,10 +151,25 @@ func main() {
 	// CREATE THREAD
 	r.Post("/{slug}/threads", func(w http.ResponseWriter, r *http.Request) {
 		slug := chi.URLParam(r, "slug")
-		ip := util.GetIP(r)
+		ipHash := util.HashIp(util.GetIP(r))
+
+		// guard banned ips
+		ban, err := database.GetBan(db, ipHash)
+		if err != nil {
+			if !errors.Is(err, database.ErrBanNotFound) {
+				http.Error(w, "Failed to get ban", http.StatusInternalServerError)
+				return
+			}
+		} else {
+			msg := fmt.Sprintf("You are banned until: %s. Reason: %s",
+				ban.Expiration.Format("2006-01-02 15:04"),
+				ban.Reason)
+			http.Error(w, msg, http.StatusForbidden)
+			return
+		}
 
 		// check cooldown
-		timeRemaining := util.GetRemainingCooldown(ip, util.ThreadCooldowns, util.THREAD_COOLDOWN)
+		timeRemaining := util.GetRemainingCooldown(ipHash, util.ThreadCooldowns, util.THREAD_COOLDOWN)
 		if timeRemaining > 0 && !isAdmin(r) {
 			response := fmt.Sprintf("Please wait %.0f seconds", timeRemaining.Seconds())
 			io.Copy(io.Discard, r.Body)
@@ -240,14 +247,14 @@ func main() {
 			return
 		}
 
-		threadId, err := database.PutThread(db, slug, subject, body, savedMediaPath, savedThumbPath, util.HashIp(ip))
+		threadId, err := database.PutThread(db, slug, subject, body, savedMediaPath, savedThumbPath, ipHash)
 		if err != nil {
 			http.Error(w, "Failed to create thread", http.StatusInternalServerError)
 			log.Printf("PutThread: %v", err)
 			return
 		}
 
-		util.BeginCooldown(ip, util.ThreadCooldowns, util.THREAD_COOLDOWN)
+		util.BeginCooldown(ipHash, util.ThreadCooldowns, util.THREAD_COOLDOWN)
 
 		// Check if it's an HTMX request
 		redirectUrl := fmt.Sprintf("/%s/threads/%d", slug, threadId)
@@ -262,10 +269,25 @@ func main() {
 	// CREATE POST
 	r.Post("/{slug}/threads/{threadId}", func(w http.ResponseWriter, r *http.Request) {
 		slug := chi.URLParam(r, "slug")
-		ip := util.GetIP(r)
+		ipHash := util.HashIp(util.GetIP(r))
+
+		// guard banned ips
+		ban, err := database.GetBan(db, ipHash)
+		if err != nil {
+			if !errors.Is(err, database.ErrBanNotFound) {
+				http.Error(w, "Failed to get ban", http.StatusInternalServerError)
+				return
+			}
+		} else {
+			msg := fmt.Sprintf("You are banned until: %s. Reason: %s",
+				ban.Expiration.Format("2006-01-02 15:04"),
+				ban.Reason)
+			http.Error(w, msg, http.StatusForbidden)
+			return
+		}
 
 		// check cooldown
-		timeRemaining := util.GetRemainingCooldown(ip, util.PostCooldowns, util.POST_COOLDOWN)
+		timeRemaining := util.GetRemainingCooldown(ipHash, util.PostCooldowns, util.POST_COOLDOWN)
 		if timeRemaining > 0 && !isAdmin(r) {
 			response := fmt.Sprintf("Please wait %.0f seconds", timeRemaining.Seconds())
 			io.Copy(io.Discard, r.Body)
@@ -352,13 +374,13 @@ func main() {
 			return
 		}
 
-		if err := database.PutPost(db, slug, threadId, body, mediaPath, thumbPath, util.HashIp(ip)); err != nil {
+		if err := database.PutPost(db, slug, threadId, body, mediaPath, thumbPath, ipHash); err != nil {
 			http.Error(w, "Failed to create post", http.StatusInternalServerError)
 			log.Printf("PutPost: %v", err)
 			return
 		}
 
-		util.BeginCooldown(ip, util.PostCooldowns, util.POST_COOLDOWN)
+		util.BeginCooldown(ipHash, util.PostCooldowns, util.POST_COOLDOWN)
 	})
 
 	// -----------------
@@ -393,6 +415,11 @@ func main() {
 				return
 			}
 
+			uniqueIpHashes := map[string]bool{}
+			for _, post := range posts {
+				uniqueIpHashes[post.IpHash] = true
+			}
+
 			previews = append(previews, views.CatalogThreadPreview{
 				Subject:    thread.Subject,
 				Body:       op.Body,
@@ -400,7 +427,7 @@ func main() {
 				ThreadURL:  fmt.Sprintf("/%s/threads/%d", slug, thread.Id),
 				ThumbPath:  op.ThumbPath,
 				ReplyCount: len(posts),
-				IpCount:    SumUniquePostIps(posts),
+				IpCount:    len(uniqueIpHashes),
 			})
 		}
 
