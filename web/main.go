@@ -61,11 +61,11 @@ func SumUniquePostIps(posts []database.Post) int {
 }
 
 func isAdmin(r *http.Request) bool {
-	isAdmin := false
+	admin := false
 	if c, err := r.Cookie("comfy_admin"); err == nil {
-		isAdmin = util.IsAdminSessionValid(c.Value)
+		admin = util.IsAdminSessionValid(c.Value)
 	}
-	return isAdmin
+	return admin
 }
 
 func main() {
@@ -188,7 +188,7 @@ func main() {
 		}
 
 		// validate inputs
-		subject := strings.ReplaceAll(strings.TrimSpace(r.FormValue("subject")), "\n", "")
+		subject := strings.TrimSpace(r.FormValue("subject"))
 		body := strings.TrimSpace(r.FormValue("body"))
 
 		if len(subject) > util.MAX_SUBJECT_LEN {
