@@ -1,8 +1,6 @@
 package util
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"sync"
 	"time"
 )
@@ -17,17 +15,11 @@ var (
 	AdminMutex    = sync.RWMutex{}
 )
 
-func GenToken() (string, error) {
-	bytes := make([]byte, 32)
-	_, err := rand.Read(bytes)
-	if err != nil {
-		return "", err
+func IsAdminSessionValid(token string) bool {
+	if DevMode {
+		return true
 	}
 
-	return hex.EncodeToString(bytes), nil
-}
-
-func IsAdminSessionValid(token string) bool {
 	AdminMutex.RLock()
 	session, exists := AdminSessions[token]
 	AdminMutex.RUnlock()

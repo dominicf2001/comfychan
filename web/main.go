@@ -4,15 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"io"
-	"log"
-	"mime/multipart"
-	"net/http"
-	"path/filepath"
-	"strconv"
-	"strings"
-	"time"
-
 	"github.com/dominicf2001/comfychan/internal/database"
 	"github.com/dominicf2001/comfychan/internal/util"
 	"github.com/dominicf2001/comfychan/web/views"
@@ -21,9 +12,15 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
+	"io"
+	"log"
+	"mime/multipart"
+	"net/http"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"time"
 )
-
-var dev = true
 
 func AdminOnlyMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -43,7 +40,7 @@ func AdminOnlyMiddleware(next http.Handler) http.Handler {
 }
 
 func disableCacheInDevMode(next http.Handler) http.Handler {
-	if !dev {
+	if !util.DevMode {
 		return next
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -61,6 +58,10 @@ func SumUniquePostIps(posts []database.Post) int {
 }
 
 func isAdmin(r *http.Request) bool {
+	if util.DevMode {
+		return true
+	}
+
 	admin := false
 	if c, err := r.Cookie("comfy_admin"); err == nil {
 		admin = util.IsAdminSessionValid(c.Value)
@@ -487,7 +488,7 @@ func main() {
 			Name:     "comfy_admin",
 			Value:    token,
 			HttpOnly: true,
-			Secure:   !dev,
+			Secure:   !util.DevMode,
 			Expires:  tokenValidUntil,
 			SameSite: http.SameSiteStrictMode,
 			Path:     "/",
@@ -516,7 +517,7 @@ func main() {
 				Name:     "comfy_admin",
 				Value:    "",
 				HttpOnly: true,
-				Secure:   !dev,
+				Secure:   !util.DevMode,
 				Expires:  time.Now(),
 				SameSite: http.SameSiteStrictMode,
 				Path:     "/",

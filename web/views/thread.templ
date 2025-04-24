@@ -76,7 +76,7 @@ templ PostOriginal(post database.Post, thread database.Thread) {
 				{ post.MediaPath }
 			</a>
 			<div class="post-img-info">
-				<span>{ util.FormatFileInfo(util.GetPostFileInfo(post.MediaPath)) }</span>
+				<span>{ util.FormatPostFileInfo(util.GetPostFileInfo(post.MediaPath)) }</span>
 			</div>
 		</div>
 		<img
@@ -146,7 +146,7 @@ templ PostReply(post database.Post, threadContext ThreadContext) {
 						{ post.MediaPath }
 					</a>
 					<div class="post-img-info">
-						<span>{ util.FormatFileInfo(util.GetPostFileInfo(post.MediaPath)) }</span>
+						<span>{ util.FormatPostFileInfo(util.GetPostFileInfo(post.MediaPath)) }</span>
 					</div>
 				</div>
 				<img
