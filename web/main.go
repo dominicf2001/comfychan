@@ -593,20 +593,22 @@ func main() {
 	// -----------------
 
 	go func() {
-		for range time.Tick(10 * time.Minute) {
+		ticker := time.NewTicker(10 * time.Second)
+		defer ticker.Stop()
+
+		for range ticker.C {
 			util.CooldownMutex.Lock()
-			defer util.CooldownMutex.Unlock()
-			for ip, cooldown := range util.PostCooldowns {
-				if time.Since(cooldown) >= util.POST_COOLDOWN {
+			for ip, t := range util.PostCooldowns {
+				if time.Since(t) >= util.POST_COOLDOWN {
 					delete(util.PostCooldowns, ip)
 				}
 			}
-
-			for ip, cooldown := range util.ThreadCooldowns {
-				if time.Since(cooldown) >= util.THREAD_COOLDOWN {
+			for ip, t := range util.ThreadCooldowns {
+				if time.Since(t) >= util.THREAD_COOLDOWN {
 					delete(util.ThreadCooldowns, ip)
 				}
 			}
+			util.CooldownMutex.Unlock()
 		}
 	}()
 
