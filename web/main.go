@@ -625,6 +625,7 @@ func main() {
 		defer ticker.Stop()
 
 		for range ticker.C {
+			// cleanup cooldowns
 			util.CooldownMutex.Lock()
 			for ip, t := range util.PostCooldowns {
 				if time.Since(t) >= util.POST_COOLDOWN {
@@ -637,6 +638,15 @@ func main() {
 				}
 			}
 			util.CooldownMutex.Unlock()
+
+			// cleanup admin sessions
+			util.AdminMutex.Lock()
+			for token, s := range util.AdminSessions {
+				if time.Now().After(s.Expiration) {
+					delete(util.AdminSessions, token)
+				}
+			}
+			util.AdminMutex.Unlock()
 		}
 	}()
 
