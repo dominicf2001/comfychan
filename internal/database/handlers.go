@@ -156,10 +156,10 @@ func GetOriginalPost(db *sql.DB, threadId int) (Post, error) {
 	return r, row.Err()
 }
 
-func PutThread(db *sql.DB, boardSlug string, subject string, body string, mediaPath string, thumbPath string, ip_hash string) error {
+func PutThread(db *sql.DB, boardSlug string, subject string, body string, mediaPath string, thumbPath string, ip_hash string) (int, error) {
 	tx, err := db.Begin()
 	if err != nil {
-		return err
+		return -1, err
 	}
 	defer tx.Rollback()
 
@@ -168,23 +168,23 @@ func PutThread(db *sql.DB, boardSlug string, subject string, body string, mediaP
 		VALUES (?, ?) RETURNING id`, boardSlug, subject)
 
 	if err != nil {
-		return err
+		return -1, err
 	}
 
-	threadId, err := res.LastInsertId()
+	threadIdStr, err := res.LastInsertId()
 	if err != nil {
-		return err
+		return -1, err
 	}
 
-	if err := PutPost(tx, boardSlug, int(threadId), body, mediaPath, thumbPath, ip_hash); err != nil {
-		return err
+	if err := PutPost(tx, boardSlug, int(threadIdStr), body, mediaPath, thumbPath, ip_hash); err != nil {
+		return -1, err
 	}
 
 	row := tx.QueryRow("SELECT COUNT(*) FROM threads WHERE board_slug = ?", boardSlug)
 
 	var threadCount int
 	if err = row.Scan(&threadCount); err != nil {
-		return err
+		return -1, err
 	}
 
 	if threadCount > util.MAX_THREAD_COUNT {
@@ -199,19 +199,19 @@ func PutThread(db *sql.DB, boardSlug string, subject string, body string, mediaP
 		var pruneThreadId int
 		err := row.Scan(&pruneThreadId)
 		if err != nil {
-			return err
+			return -1, err
 		}
 
 		if err := DeleteThread(tx, pruneThreadId); err != nil {
-			return err
+			return -1, err
 		}
 	}
 
 	if err = tx.Commit(); err != nil {
-		return err
+		return -1, err
 	}
 
-	return nil
+	return int(threadIdStr), nil
 }
 
 func PutPost(db Queryer, boardSlug string, threadId int, body string, mediaPath string, thumbPath string, ip_hash string) error {

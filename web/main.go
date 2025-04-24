@@ -239,13 +239,23 @@ func main() {
 			return
 		}
 
-		if err := database.PutThread(db, slug, subject, body, savedMediaPath, savedThumbPath, util.HashIp(ip)); err != nil {
+		threadId, err := database.PutThread(db, slug, subject, body, savedMediaPath, savedThumbPath, util.HashIp(ip))
+		if err != nil {
 			http.Error(w, "Failed to create thread", http.StatusInternalServerError)
 			log.Printf("PutThread: %v", err)
 			return
 		}
 
 		util.BeginCooldown(ip, util.ThreadCooldowns, util.THREAD_COOLDOWN)
+
+		// Check if it's an HTMX request
+		redirectUrl := fmt.Sprintf("/%s/threads/%d", slug, threadId)
+		if r.Header.Get("HX-Request") == "true" {
+			w.Header().Set("HX-Redirect", redirectUrl)
+			w.WriteHeader(http.StatusOK)
+		} else {
+			http.Redirect(w, r, redirectUrl, http.StatusSeeOther)
+		}
 	})
 
 	// CREATE POST
