@@ -16,10 +16,6 @@ var (
 )
 
 func IsAdminSessionValid(token string) bool {
-	if DevMode {
-		return true
-	}
-
 	AdminMutex.RLock()
 	session, exists := AdminSessions[token]
 	AdminMutex.RUnlock()

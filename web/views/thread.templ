@@ -48,7 +48,11 @@ templ PostAdminDialog(post database.Post) {
 			</div>
 			<div>
 				<span>Days: </span>
-				<input type="datetime-local" name="expiration"/>
+				<input
+					_="on load set my.value to getCurrentDateISOString() then set my.min to my.value"
+					type="datetime-local"
+					name="expiration"
+				/>
 			</div>
 			<button
 				type="submit"

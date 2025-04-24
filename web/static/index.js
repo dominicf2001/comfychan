@@ -108,3 +108,7 @@ function applyCatalogSearch() {
 function currentBoardSlug() {
     return window.location.pathname.split("/")[1] || "";
 }
+
+function getCurrentDateISOString() {
+    return (new Date()).toISOString().slice(0, 16)
+}

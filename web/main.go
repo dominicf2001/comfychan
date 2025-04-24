@@ -25,7 +25,7 @@ import (
 func AdminOnlyMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c, err := r.Cookie("comfy_admin")
-		if err != nil || !util.IsAdminSessionValid(c.Value) {
+		if !util.DevMode && (err != nil || !util.IsAdminSessionValid(c.Value)) {
 			// Check if it's an HTMX request
 			if r.Header.Get("HX-Request") == "true" {
 				w.Header().Set("HX-Redirect", "/authorize")
@@ -494,16 +494,6 @@ func main() {
 			Path:     "/",
 		})
 
-	})
-
-	r.Get("/authorized", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-
-		if c, err := r.Cookie("comfy_admin"); err == nil && util.IsAdminSessionValid(c.Value) {
-			w.Write([]byte("true"))
-		} else {
-			w.Write([]byte("false"))
-		}
 	})
 
 	r.Route("/admin", func(r chi.Router) {
