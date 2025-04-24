@@ -185,11 +185,16 @@ type ThreadContext struct {
 	IsAdmin bool
 }
 
-templ ThreadActionBar(thread database.Thread) {
+templ ThreadActionBar(thread database.Thread, pos string) {
 	<hr/>
 	<div style="margin-left: 25px;">
-		<a href={ templ.URL("/" + thread.BoardSlug) } style="margin-right: 5px;" class="link-button">[Catalog]</a>
-		<a _="on click trigger refreshPosts on body" class="link-button">[Refresh]</a>
+		if pos == "top" {
+			<a onclick="smoothScrollTo('bottom')" class="link-button">[Scroll to bottom]</a>
+		} else {
+			<a onclick="smoothScrollTo('top')" class="link-button">[Scroll to top]</a>
+		}
+		<a href={ templ.URL("/" + thread.BoardSlug) } style="margin-left: 5px;" class="link-button">[Catalog]</a>
+		<a _="on click trigger refreshPosts on body" style="margin-left: 5px;" class="link-button">[Refresh]</a>
 	</div>
 	<hr/>
 }
@@ -201,15 +206,15 @@ templ Thread(board database.Board, thread database.Thread, posts []database.Post
 		<div class="new-post-container">
 			@shared.NewPostForm(board, fmt.Sprintf("/%s/threads/%d", board.Slug, thread.Id), false)
 		</div>
-		@ThreadActionBar(thread)
+		@ThreadActionBar(thread, "top")
 		<div
 			class="thread"
 			hx-get={ fmt.Sprintf("/hx/%s/threads/%d/posts", thread.BoardSlug, thread.Id) }
 			hx-trigger="refreshPosts from:body"
-			_="on htmx:afterSwap call insertHeaderReplies() then scrollToBottom()"
+			_="on htmx:afterSwap call insertHeaderReplies() then smoothScrollTo('bottom')"
 		>
 			@Posts(posts, thread, threadContext)
 		</div>
-		@ThreadActionBar(thread)
+		@ThreadActionBar(thread, "bottom")
 	}
 }

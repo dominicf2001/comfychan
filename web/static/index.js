@@ -13,8 +13,13 @@ function isOffScreen(el) {
     );
 }
 
-function scrollToBottom() {
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+function smoothScrollTo(loc) {
+    if (loc === "top") {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    else if (loc === "bottom") {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
 }
 
 function isHttpWarningStatus(code) {
