@@ -1,6 +1,7 @@
 internal/database/comfychan.db
 **/*_templ.go
 tmp
+out
 
 web/static/media/posts/
 web/static/media/posts/

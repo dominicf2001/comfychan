@@ -21,3 +21,10 @@ db/seed/f:
 
 img/clear:
 	rm -rf ./web/static/media/posts || true
+
+build: 
+	go build -o ./out/comfychan ./web
+
+deploy:
+	sudo cp ./out/comfychan /srv/comfychan/
+	sudo chown root:root /srv/comfychan/comfychan
