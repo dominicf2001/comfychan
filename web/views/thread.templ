@@ -76,7 +76,7 @@ templ PostOriginal(post database.Post, thread database.Thread) {
 				style=" display: none;"
 			>[close]</span>
 			File:
-			<a href={ templ.URL("/static/media/posts/full/" + post.MediaPath) } class="post-filename">
+			<a href={ templ.URL("/media/posts/full/" + post.MediaPath) } class="post-filename">
 				{ post.MediaPath }
 			</a>
 			<div class="post-img-info">
@@ -86,7 +86,7 @@ templ PostOriginal(post database.Post, thread database.Thread) {
 		<img
 			onclick="togglePostFile(this)"
 			loading="lazy"
-			src={ fmt.Sprintf("/static/media/posts/thumb/%s", post.ThumbPath) }
+			src={ fmt.Sprintf("/media/posts/thumb/%s", post.ThumbPath) }
 			data-full={ post.MediaPath }
 			data-thumb={ post.ThumbPath }
 			class="post-img"
@@ -159,7 +159,7 @@ templ PostReply(post database.Post, threadContext ThreadContext) {
 						style=" display: none;"
 					>[close]</span>
 					File:
-					<a href={ templ.URL("/static/media/posts/full/" + post.MediaPath) } class="post-filename">
+					<a href={ templ.URL("/media/posts/full/" + post.MediaPath) } class="post-filename">
 						{ post.MediaPath }
 					</a>
 					<div class="post-img-info">
@@ -169,7 +169,7 @@ templ PostReply(post database.Post, threadContext ThreadContext) {
 				<img
 					onclick="togglePostFile(this)"
 					loading="lazy"
-					src={ fmt.Sprintf("/static/media/posts/thumb/%s",
+					src={ fmt.Sprintf("/media/posts/thumb/%s",
 			post.ThumbPath) }
 					data-full={ post.MediaPath }
 					data-thumb={ post.ThumbPath }

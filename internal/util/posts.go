@@ -23,8 +23,8 @@ const FILE_MEM_LIMIT int64 = 10 << 20
 const MAX_REQUEST_BYTES int64 = FILE_MEM_LIMIT + (1 << 20)
 
 var (
-	POST_MEDIA_FULL_PATH  = "web/static/media/posts/full"
-	POST_MEDIA_THUMB_PATH = "web/static/media/posts/thumb"
+	POST_MEDIA_FULL_PATH  = "media/posts/full"
+	POST_MEDIA_THUMB_PATH = "media/posts/thumb"
 )
 
 const MAX_THREAD_COUNT = 50

@@ -3,8 +3,8 @@ internal/database/comfychan.db
 tmp
 out
 
-web/static/media/posts/
-web/static/media/posts/
+media
+
 # Devenv
 .devenv*
 devenv.local.nix

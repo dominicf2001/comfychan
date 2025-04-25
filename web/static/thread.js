@@ -44,7 +44,7 @@ function togglePostFile(el) {
         const vidEl = imgEl.parentElement.querySelector("video");
         const closeVidBtn = imgEl.parentElement.querySelector(".link-button");
         if (vidEl.style.display === "none") {
-            vidEl.src = "/static/media/posts/full/" + imgEl.dataset.full;
+            vidEl.src = "/media/posts/full/" + imgEl.dataset.full;
             vidEl.style.display = "";
             imgEl.style.display = "none";
             closeVidBtn.style.display = "";
@@ -59,11 +59,11 @@ function togglePostFile(el) {
     else {
         if (imgEl.classList.contains("post-img-full")) {
             imgEl.classList.remove("post-img-full");
-            imgEl.src = "/static/media/posts/thumb/" + imgEl.dataset.thumb;
+            imgEl.src = "/media/posts/thumb/" + imgEl.dataset.thumb;
         }
         else {
             imgEl.classList.add("post-img-full");
-            imgEl.src = "/static/media/posts/full/" + imgEl.dataset.full;
+            imgEl.src = "/media/posts/full/" + imgEl.dataset.full;
         }
     }
 }

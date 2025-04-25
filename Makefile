@@ -19,10 +19,6 @@ db/seed:
 db/seed/f:
 	rm ./internal/database/comfychan.db && sqlite3 ./internal/database/comfychan.db < ./internal/database/seed.sql
 
-img/clear:
-	rm -rf ./web/static/media/posts || true
-
-
 build: 
 	go build -o ./out/comfychan ./web
 

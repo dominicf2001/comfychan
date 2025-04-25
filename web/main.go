@@ -75,10 +75,8 @@ func main() {
 		dataDir = "." // for development
 	}
 
-	log.Println("DATADIR: ", dataDir)	
-
 	util.POST_MEDIA_FULL_PATH = filepath.Join(dataDir, util.POST_MEDIA_FULL_PATH)
-	util.POST_MEDIA_THUMB_PATH = filepath.Join(dataDir, util.POST_MEDIA_FULL_PATH)
+	util.POST_MEDIA_THUMB_PATH = filepath.Join(dataDir, util.POST_MEDIA_THUMB_PATH)
 	util.DATABASE_PATH = filepath.Join(dataDir, util.DATABASE_PATH)
 	util.STATIC_PATH = filepath.Join(dataDir, util.STATIC_PATH)
 
@@ -94,8 +92,13 @@ func main() {
 
 	r.Handle("/static/*",
 		disableCacheInDevMode(
-			http.StripPrefix("/static",
+			http.StripPrefix("/static/",
 				http.FileServer(http.Dir(util.STATIC_PATH)))))
+
+	r.Handle("/media/*",
+		disableCacheInDevMode(
+			http.StripPrefix("/media/",
+				http.FileServer(http.Dir(filepath.Join(dataDir, "media"))))))
 
 	// -----------------
 
