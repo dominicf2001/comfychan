@@ -310,7 +310,7 @@ func main() {
 			return
 		}
 
-		if isLocked {
+		if isLocked && !isAdmin(r) {
 			http.Error(w, "This thread is locked", http.StatusForbidden)
 			return
 		}

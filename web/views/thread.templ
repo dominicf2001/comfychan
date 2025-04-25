@@ -216,7 +216,7 @@ templ Thread(board database.Board, thread database.Thread, posts []database.Post
 		<script src="/static/thread.js" defer></script>
 		@BoardHeader(board)
 		<div class="new-post-container">
-			if !thread.Locked {
+			if !thread.Locked || threadContext.IsAdmin {
 				@shared.NewPostForm(board, fmt.Sprintf("/%s/threads/%d", board.Slug, thread.Id), false)
 			}
 		</div>
