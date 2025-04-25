@@ -4,3 +4,12 @@ tmp
 
 web/static/media/posts/
 web/static/media/posts/
+# Devenv
+.devenv*
+devenv.local.nix
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml
