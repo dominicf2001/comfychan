@@ -80,7 +80,7 @@ func main() {
 	util.DATABASE_PATH = filepath.Join(dataDir, util.DATABASE_PATH)
 	util.STATIC_PATH = filepath.Join(dataDir, util.STATIC_PATH)
 
-	db, err := sql.Open("sqlite3", util.DATABASE_PATH)
+	db, err := sql.Open("sqlite3", util.DATABASE_PATH+"?_foreign_keys=on")
 	if err != nil {
 		log.Fatal(err)
 	}

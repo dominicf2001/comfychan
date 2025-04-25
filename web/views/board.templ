@@ -166,13 +166,6 @@ templ ThreadsCatalog(previews []CatalogThreadPreview, catalogContext CatalogCont
 						}
 					</button>
 					<button
-						class="link-button"
-						hx-delete={ fmt.Sprintf("/admin/threads/%d", preview.ThreadId) }
-						hx-swap="none"
-						_="on htmx:afterRequest trigger refreshPosts on body"
-						hx-confirm="Are you sure you wish to delete this thread?"
-					>Delete</button>
-					<button
 						class="admin-dialog-close-btn link-button"
 						_={ fmt.Sprintf("on click call #%s-dialog.close()", elThreadId) }
 					>Close</button>
