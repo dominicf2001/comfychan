@@ -271,6 +271,13 @@ func main() {
 		slug := chi.URLParam(r, "slug")
 		ipHash := util.HashIp(util.GetIP(r))
 
+		threadIdStr := chi.URLParam(r, "threadId")
+		threadId, err := strconv.Atoi(threadIdStr)
+		if err != nil {
+			http.Error(w, "Invalid thread id", http.StatusBadRequest)
+			return
+		}
+
 		// guard banned ips
 		ban, err := database.GetBan(db, ipHash)
 		if err != nil {
@@ -292,6 +299,19 @@ func main() {
 			response := fmt.Sprintf("Please wait %.0f seconds", timeRemaining.Seconds())
 			io.Copy(io.Discard, r.Body)
 			http.Error(w, response, http.StatusTooManyRequests)
+			return
+		}
+
+		// guard if thread locked
+		isLocked := true
+		row := db.QueryRow(`SELECT locked FROM threads where id = ?`, threadId)
+		if err := row.Scan(&isLocked); err != nil {
+			http.Error(w, "Failed to check if thread locked", http.StatusInternalServerError)
+			return
+		}
+
+		if isLocked {
+			http.Error(w, "This thread is locked", http.StatusForbidden)
 			return
 		}
 
@@ -364,14 +384,6 @@ func main() {
 			}
 			mediaPath = savedMediaPath
 			thumbPath = savedThumbPath
-		}
-
-		// put post into DB
-		threadIdStr := chi.URLParam(r, "threadId")
-		threadId, err := strconv.Atoi(threadIdStr)
-		if err != nil {
-			http.Error(w, "Invalid thread id", http.StatusBadRequest)
-			return
 		}
 
 		if err := database.PutPost(db, slug, threadId, body, mediaPath, thumbPath, ipHash); err != nil {

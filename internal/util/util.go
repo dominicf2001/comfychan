@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-const DevMode = true
+const DevMode = false
 
 func FormatBytes(bytes int64) string {
 	const (
