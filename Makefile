@@ -22,9 +22,17 @@ db/seed/f:
 img/clear:
 	rm -rf ./web/static/media/posts || true
 
+
 build: 
 	go build -o ./out/comfychan ./web
+	sudo mkdir -p /var/lib/comfychan/static
+	sudo mkdir -p /var/lib/comfychan/internal/database
+	sudo cp -r web/static/* /var/lib/comfychan/static/
 
 deploy:
 	sudo cp ./out/comfychan /srv/comfychan/
 	sudo chown root:root /srv/comfychan/comfychan
+
+db/deploy:
+	sudo mkdir -p /var/lib/comfychan/internal/database
+	sudo sqlite3 /var/lib/comfychan/internal/database/comfychan.db < ./internal/database/seed.sql
