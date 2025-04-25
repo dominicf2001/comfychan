@@ -2,7 +2,6 @@
 :root {
     --bg-main: #EEF2FF;
     --text-muted: #575F68;
-    --danger: #FF0000;
     --brand-red: #AF0A0F;
 
     --form-header-bg: #9988EE;
@@ -17,12 +16,14 @@
 
     --reply-link: #DD0000;
     --dialog-bg: #EDEFF7;
+
+    --danger: #FF0000;
+    --warning-bg: #FFAAAA;
+    --black: #000000;
+
     --heading-bg: #00007F;
     --heading-text: #FFFFFF;
     --box-bg: #ECEFF6;
-
-    --warning-bg: #FFAAAA;
-    --black: #000000;
 
     --shadow: rgba(0, 0, 0, 0.25);
 }
@@ -136,10 +137,27 @@ body {
 }
 
 .catalog-preview-counts {
-    display: block;
     font-size: 12px;
-    margin-bottom: 5px;
     margin-top: 2.5px;
+}
+
+.catalog-preview-counts-container {
+    position: relative;
+    margin-top: 4px;
+}
+
+.icons-container {
+    position: absolute;
+    right: 100%;
+    margin-right: 6px;
+    top: 50%;
+    left: 22%;
+    transform: translateY(-50%);
+    display: flex;
+}
+
+.icons-container .icon {
+    margin-left: 2px;
 }
 
 /* NEW THREAD BUTTON/FORM */
@@ -199,26 +217,6 @@ body {
 
 .thread {
     margin: 2rem;
-}
-
-.thread-title {
-    position: relative;
-    display: inline-block;
-    font-size: 14px;
-    font-weight: bold;
-}
-
-.thread-icons {
-    position: absolute;
-    right: 100%;
-    margin-right: 6px;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-}
-
-.thread-icons .icon {
-    margin-left: 2px;
 }
 
 .thread-subject {

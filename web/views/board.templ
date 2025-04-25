@@ -82,21 +82,8 @@ templ ThreadsCatalog(previews []CatalogThreadPreview, catalogContext CatalogCont
 				preview.ThumbPath) }
 					/>
 				</a>
-				<strong class="catalog-preview-counts">
-					R: { replyCount } / I: { ipCount }
-					if catalogContext.IsAdmin {
-						<span
-							id={ fmt.Sprintf("%s-admintoggle", elThreadId) }
-							class="link-button"
-							style="font-size:10px;margin-left:5px;"
-							_={ fmt.Sprintf(`on click call #%s-dialog.showModal()`, elThreadId) }
-						>
-							M
-						</span>
-					}
-				</strong>
-				<h1 class="thread-title">
-					<span class="thread-icons">
+				<div class="catalog-preview-counts-container">
+					<span class="icons-container">
 						if preview.Locked {
 							<img src="/static/media/icons/lock.svg" alt="Locked" class="icon"/>
 						}
@@ -104,6 +91,21 @@ templ ThreadsCatalog(previews []CatalogThreadPreview, catalogContext CatalogCont
 							<img src="/static/media/icons/pin.svg" alt="Pinned" class="icon"/>
 						}
 					</span>
+					<strong class="catalog-preview-counts">
+						R: { replyCount } / I: { ipCount }
+						if catalogContext.IsAdmin {
+							<span
+								id={ fmt.Sprintf("%s-admintoggle", elThreadId) }
+								class="link-button"
+								style="font-size:10px;margin-left:5px;"
+								_={ fmt.Sprintf(`on click call #%s-dialog.showModal()`, elThreadId) }
+							>
+								M
+							</span>
+						}
+					</strong>
+				</div>
+				<h1 style="margin-top: 5px;">
 					<a href={ templ.URL(preview.ThreadURL) } class="catalog-preview-link">
 						{ preview.Subject }
 					</a>
