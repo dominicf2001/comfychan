@@ -98,8 +98,12 @@ func main() {
 
 		board, err := database.GetBoard(db, slug)
 		if err != nil {
-			http.NotFound(w, r)
-			log.Printf("Board %q not found: %v", slug, err)
+			if errors.Is(err, sql.ErrNoRows) {
+				views.NotFound().Render(r.Context(), w)
+				return
+			}
+			http.Error(w, "Failed to get board", http.StatusInternalServerError)
+			log.Printf("Failed to get board%q: %v", slug, err)
 			return
 		}
 
@@ -118,13 +122,21 @@ func main() {
 
 		board, err := database.GetBoard(db, slug)
 		if err != nil {
-			http.NotFound(w, r)
-			log.Printf("Board %q not found: %v", slug, err)
+			if errors.Is(err, sql.ErrNoRows) {
+				views.NotFound().Render(r.Context(), w)
+				return
+			}
+			http.Error(w, "Failed to get board", http.StatusInternalServerError)
+			log.Printf("Failed to get board%q: %v", slug, err)
 			return
 		}
 
 		thread, err := database.GetThread(db, threadId)
 		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				views.NotFound().Render(r.Context(), w)
+				return
+			}
 			http.Error(w, "Failed to get thread", http.StatusInternalServerError)
 			log.Printf("Failed to get thread %q: %v", threadIdStr, err)
 			return
@@ -464,6 +476,10 @@ func main() {
 
 		thread, err := database.GetThread(db, threadId)
 		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				views.NotFound().Render(r.Context(), w)
+				return
+			}
 			http.Error(w, "Failed to get thread", http.StatusBadRequest)
 			log.Printf("GetThread: %v", err)
 			return
@@ -673,6 +689,10 @@ func main() {
 				Path:     "/",
 			})
 		})
+	})
+
+	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		views.NotFound().Render(r.Context(), w)
 	})
 
 	// -----------------
