@@ -71,7 +71,7 @@ function highlightPost(postId, e, status = true) {
 }
 
 function resizeCatalogPreviewImgs() {
-    const value = $("selectSortBy").value;
+    const value = $("selectResize").value;
     const postsImages = Array.from(document.querySelectorAll(".catalog-preview img"));
     for (const postImage of postsImages) {
         switch (value) {
@@ -103,6 +103,25 @@ function applyCatalogSearch() {
             post.style.display = "";
         }
     }
+}
+
+function applyCatalogSort(desc = true) {
+    const sortBy = $("selectSortBy").value;
+
+    const catalog = document.getElementById('catalog');
+    const previews = Array.from(catalog.children);
+
+    previews.sort((a, b) => {
+        const pinDiff = (+b.dataset.pinned) - (+a.dataset.pinned);
+        if (pinDiff !== 0) return pinDiff;
+
+        const bumpDiff = (+a.dataset[sortBy]) - (+b.dataset[sortBy]);
+        return desc ? -bumpDiff : bumpDiff;
+    });
+
+    const frag = document.createDocumentFragment();
+    previews.forEach(el => frag.appendChild(el));
+    catalog.appendChild(frag);
 }
 
 function currentBoardSlug() {

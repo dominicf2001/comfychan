@@ -430,6 +430,7 @@ func main() {
 				IpCount:    len(uniqueIpHashes),
 				Pinned:     thread.Pinned,
 				Locked:     thread.Locked,
+				BumpedAt:   thread.BumpedAt,
 			})
 		}
 

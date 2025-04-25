@@ -6,6 +6,7 @@ import (
 	"github.com/dominicf2001/comfychan/internal/util"
 	"github.com/dominicf2001/comfychan/web/views/shared"
 	"strconv"
+	"time"
 )
 
 templ BoardHeader(board database.Board) {
@@ -32,9 +33,14 @@ templ Board(board database.Board, isAdmin bool) {
 		<hr/>
 		<div id="boardActionBar">
 			<span>Image size: </span>
-			<select onchange="resizeCatalogPreviewImgs()" id="selectSortBy">
+			<select onchange="resizeCatalogPreviewImgs()" id="selectResize">
 				<option selected value="small">Small</option>
 				<option value="large">Large</option>
+			</select>
+			<span>Sort by: </span>
+			<select onchange="applyCatalogSort()" id="selectSortBy">
+				<option selected value="bumpedat">Bump order</option>
+				<option value="replycount">Reply count</option>
 			</select>
 			<input style="margin-left: 10px;" oninput="applyCatalogSearch()" id="catalogSearch" placeholder="Search"/>
 			<a style _="on click trigger refreshPosts on body" class="link-button">[Refresh]</a>
@@ -45,7 +51,8 @@ templ Board(board database.Board, isAdmin bool) {
 			hx-trigger="load, refreshPosts from:body"
 			_="on htmx:afterRequest 
 				call resizeCatalogPreviewImgs()
-				then call applyCatalogSearch()"
+				then call applyCatalogSearch()
+				then call applyCatalogSort()"
 		></div>
 	}
 }
@@ -60,6 +67,7 @@ type CatalogThreadPreview struct {
 	IpCount    int
 	Pinned     bool
 	Locked     bool
+	BumpedAt   time.Time
 }
 
 type CatalogContext struct {
@@ -73,7 +81,13 @@ templ ThreadsCatalog(previews []CatalogThreadPreview, catalogContext CatalogCont
 			{{ replyCount := strconv.FormatInt(int64(preview.ReplyCount), 10) }}
 			{{ ipCount := strconv.FormatInt(int64(preview.IpCount), 10) }}
 			{{ elThreadId := fmt.Sprintf("thread-%d", preview.ThreadId) }}
-			<div id={ elThreadId } class="catalog-preview">
+			{{
+				pinnedInt := 0
+				if preview.Pinned {
+					pinnedInt = 1
+				}
+			}}
+			<div data-pinned={ strconv.Itoa(pinnedInt) } data-replycount={ strconv.Itoa(preview.ReplyCount) } data-bumpedat={ strconv.FormatInt(preview.BumpedAt.UnixMilli(), 10) } id={ elThreadId } class="catalog-preview">
 				<a href={ templ.URL(preview.ThreadURL) }>
 					<img
 						loading="lazy"
