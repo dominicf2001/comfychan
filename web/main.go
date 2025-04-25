@@ -4,6 +4,16 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"io"
+	"log"
+	"mime/multipart"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/dominicf2001/comfychan/internal/database"
 	"github.com/dominicf2001/comfychan/internal/util"
 	"github.com/dominicf2001/comfychan/web/views"
@@ -12,14 +22,6 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
-	"io"
-	"log"
-	"mime/multipart"
-	"net/http"
-	"path/filepath"
-	"strconv"
-	"strings"
-	"time"
 )
 
 func AdminOnlyMiddleware(next http.Handler) http.Handler {
@@ -66,6 +68,18 @@ func main() {
 	// SETUP
 	// -----------------
 
+	// init paths
+
+	dataDir := os.Getenv("COMFYCHAN_DATA_DIR")
+	if dataDir == "" {
+		dataDir = "." // for development
+	}
+
+	util.POST_MEDIA_FULL_PATH = filepath.Join(dataDir, util.POST_MEDIA_FULL_PATH)
+	util.POST_MEDIA_THUMB_PATH = filepath.Join(dataDir, util.POST_MEDIA_FULL_PATH)
+	util.DATABASE_PATH = filepath.Join(dataDir, util.DATABASE_PATH)
+	util.STATIC_PATH = filepath.Join(dataDir, util.STATIC_PATH)
+
 	db, err := sql.Open("sqlite3", "internal/database/comfychan.db")
 	if err != nil {
 		log.Fatal(err)
@@ -79,7 +93,7 @@ func main() {
 	r.Handle("/static/*",
 		disableCacheInDevMode(
 			http.StripPrefix("/static",
-				http.FileServer(http.Dir("web/static")))))
+				http.FileServer(http.Dir(util.STATIC_PATH)))))
 
 	// -----------------
 

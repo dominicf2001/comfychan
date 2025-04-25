@@ -12,6 +12,11 @@ import (
 
 const DevMode = false
 
+var (
+	STATIC_PATH   = "web/static"
+	DATABASE_PATH = "internal/database/comfychan.db"
+)
+
 func FormatBytes(bytes int64) string {
 	const (
 		KB = 1 << 10 // 1024
