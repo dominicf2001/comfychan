@@ -25,12 +25,12 @@ img/clear:
 
 build: 
 	go build -o ./out/comfychan ./web
-	sudo mkdir -p /var/lib/comfychan/static
-	sudo mkdir -p /var/lib/comfychan/internal/database
-	sudo cp -r web/static/* /var/lib/comfychan/static/
 
 deploy:
+	sudo mkdir -p /var/lib/comfychan/web/static
+	sudo mkdir -p /var/lib/comfychan/internal/database
 	sudo cp ./out/comfychan /srv/comfychan/
+	sudo cp -r web/static/* /var/lib/comfychan/web/static/
 	sudo chown root:root /srv/comfychan/comfychan
 
 db/deploy:

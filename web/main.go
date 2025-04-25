@@ -75,12 +75,14 @@ func main() {
 		dataDir = "." // for development
 	}
 
+	log.Println("DATADIR: ", dataDir)	
+
 	util.POST_MEDIA_FULL_PATH = filepath.Join(dataDir, util.POST_MEDIA_FULL_PATH)
 	util.POST_MEDIA_THUMB_PATH = filepath.Join(dataDir, util.POST_MEDIA_FULL_PATH)
 	util.DATABASE_PATH = filepath.Join(dataDir, util.DATABASE_PATH)
 	util.STATIC_PATH = filepath.Join(dataDir, util.STATIC_PATH)
 
-	db, err := sql.Open("sqlite3", "internal/database/comfychan.db")
+	db, err := sql.Open("sqlite3", util.DATABASE_PATH)
 	if err != nil {
 		log.Fatal(err)
 	}
