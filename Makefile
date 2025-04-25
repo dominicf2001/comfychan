@@ -19,7 +19,9 @@ db/seed:
 db/seed/f:
 	rm ./internal/database/comfychan.db && sqlite3 ./internal/database/comfychan.db < ./internal/database/seed.sql
 
+
 build: 
+	templ generate
 	go build -o ./out/comfychan ./web
 
 deploy:
@@ -27,8 +29,9 @@ deploy:
 	sudo mkdir -p /var/lib/comfychan/internal/database
 	sudo cp ./out/comfychan /srv/comfychan/
 	sudo cp -r web/static/* /var/lib/comfychan/web/static/
-	sudo chown root:root /srv/comfychan/comfychan
 
 db/deploy:
 	sudo mkdir -p /var/lib/comfychan/internal/database
 	sudo sqlite3 /var/lib/comfychan/internal/database/comfychan.db < ./internal/database/seed.sql
+	sudo chown comfychan:comfychan /var/lib/private/comfychan/internal/database/comfychan.db
+
