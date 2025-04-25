@@ -450,3 +450,25 @@ footer {
     font-size: 10px;
     text-align: center;
 }
+
+/* 404 NOT FOUND */
+
+.not-found-container {
+    min-height: 90vh;
+    display: flex;
+    align-items: center;
+}
+
+.not-found-container .box {
+    text-align: center;
+}
+
+.not-found-container .box div {
+    padding: 20px;
+}
+
+#notFoundImg {
+    max-width: 80%;
+    display: block;
+    margin: auto;
+}
