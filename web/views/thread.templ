@@ -106,7 +106,9 @@ templ PostOriginal(post database.Post, thread database.Thread) {
 			<span class="post-date">{ post.CreatedAt.Format("01/02/2006") }</span>
 			<span class="post-time">{ post.CreatedAt.Format("15:04") }</span>
 			<span
-				_={ fmt.Sprintf("on click set #newPostBody.value to #newPostBody.value + '>>%d\n'", post.Number) }
+				_={ fmt.Sprintf(`
+				on click set #newPostBody.value to #newPostBody.value + '>>%d\n'
+				then call #newPostBody.focus()`, post.Number) }
 				class=" post-num"
 			>
 				No.{ strconv.Itoa(post.Number) }
@@ -137,7 +139,10 @@ templ PostReply(post database.Post, threadContext ThreadContext) {
 			<span class="post-date">{ post.CreatedAt.Format("01/02/2006") }</span>
 			<span class="post-time">{ post.CreatedAt.Format("15:04") }</span>
 			<span
-				_={ fmt.Sprintf("on click set #newPostBody.value to #newPostBody.value + '>>%d\n'", post.Number) }
+				_={ fmt.Sprintf(`
+				on click set #newPostBody.value to #newPostBody.value + '>>%d\n' 
+				then call smoothScrollTo('top')
+				then call #newPostBody.focus()`, post.Number) }
 				class=" post-num"
 			>
 				No.{ strconv.Itoa(post.Number) }
