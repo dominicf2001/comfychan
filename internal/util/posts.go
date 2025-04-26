@@ -28,7 +28,7 @@ var (
 	POST_MEDIA_THUMB_PATH = "media/posts/thumb"
 )
 
-const MAX_THREAD_COUNT = 3
+const MAX_THREAD_COUNT = 50
 
 const MAX_BODY_LEN = 3000
 const MAX_SUBJECT_LEN = 50
