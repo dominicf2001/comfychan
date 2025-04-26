@@ -1,29 +1,30 @@
 /* ----------  Palette  ---------- */
 :root {
-    --bg-main: #EEF2FF;
-    --text-muted: #575F68;
-    --brand-red: #AF0A0F;
+    --bg-main: #1d1f21;
+    --text-color: #c5c8c6;
+    --text-muted: #81a2be;
+    --brand-red: #c5c8c6;
 
-    --form-header-bg: #9988EE;
-    --border-light: #B7C5D9;
-    --link-primary: #0F0C5D;
-    --link-secondary: #34345C;
+    --form-header-bg: #282a2e;
+    --border-light: #282a2e;
+    --subject: #b294bb;
+    --link-secondary: #81a2be;
 
-    --post-bg: #D6DAF0;
+    --post-bg: #282a2e;
     --post-highlight: #D6BAD0;
-    --post-author: #13A82A;
-    --greentext: #789922;
+    --post-author: #c5c8c6;
+    --greentext: #b5bd68;
 
-    --reply-link: #DD0000;
+    --reply-link: #81a2be;
     --dialog-bg: #EDEFF7;
 
-    --danger: #FF0000;
-    --warning-bg: #FFAAAA;
+    --danger: #b294bb;
+    --warning-bg: #b294bb;
     --black: #000000;
 
-    --heading-bg: #00007F;
+    --heading-bg: #b294bb45;
     --heading-text: #FFFFFF;
-    --box-bg: #ECEFF6;
+    --box-bg: #282a2e;
 
     --shadow: rgba(0, 0, 0, 0.25);
 }
@@ -37,6 +38,7 @@ body {
     padding-right: 4px;
     margin: 0 4px;
     font-size: 10pt;
+    color: var(--text-color)
 }
 
 /* INDEX */
@@ -72,7 +74,7 @@ body {
 }
 
 .board-header h1 {
-    font-weight: bold;
+    font-weight: bolder;
     font-size: 1.8rem;
     margin: 8px;
     margin-top: 12px;
@@ -122,7 +124,7 @@ body {
 
 .catalog-preview h1 {
     font-size: 14px;
-    font-weight: bold;
+    font-weight: bolder;
 }
 
 .catalog-preview p {
@@ -133,7 +135,7 @@ body {
 .catalog-preview-link {
     text-decoration: none;
     cursor: pointer;
-    color: var(--link-primary);
+    color: var(--subject);
 }
 
 .catalog-preview-img {
@@ -235,7 +237,7 @@ body {
 
 .thread-subject {
     font-weight: bold;
-    color: var(--link-primary);
+    color: var(--subject);
     margin-right: 5px;
     float: left;
 }
@@ -254,7 +256,7 @@ body {
 }
 
 .post-highlighted {
-    background: var(--post-highlight);
+    outline: 1px solid var(--link-secondary)
 }
 
 .post-header {
@@ -267,6 +269,7 @@ body {
 }
 
 .post-author {
+    font-weight: bold;
     color: var(--post-author);
 }
 
@@ -337,15 +340,24 @@ body {
     cursor: pointer;
 }
 
+
+.reply-link:hover {
+    opacity: 60%;
+}
+
 .reply-link-header {
     color: var(--link-secondary);
-    text-decoration: underline;
+    text-decoration: none;
     cursor: pointer;
     margin-left: 4px;
 }
 
 .reply-link-header:hover {
-    color: var(--reply-link);
+    opacity: 60%;
+}
+
+.ext-link {
+    color: var(--link-secondary);
 }
 
 /* ADMIN */
@@ -405,7 +417,7 @@ body {
 }
 
 .box {
-    font-size: 12px;
+    font-size: 10pt;
     border: 1px solid var(--black);
     background-color: var(--box-bg);
 }
