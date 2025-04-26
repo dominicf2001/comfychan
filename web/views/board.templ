@@ -113,14 +113,6 @@ templ ThreadsCatalog(previews []CatalogThreadPreview, catalogContext CatalogCont
 					/>
 				</a>
 				<div class="catalog-preview-counts-container">
-					<span class="icons-container">
-						if preview.Locked {
-							<img src="/static/media/icons/lock.svg" alt="Locked" class="icon"/>
-						}
-						if preview.Pinned {
-							<img src="/static/media/icons/pin.svg" alt="Pinned" class="icon"/>
-						}
-					</span>
 					<strong class="catalog-preview-counts">
 						R: { replyCount } / I: { ipCount }
 						if catalogContext.IsAdmin {
@@ -134,6 +126,14 @@ templ ThreadsCatalog(previews []CatalogThreadPreview, catalogContext CatalogCont
 							</span>
 						}
 					</strong>
+					<span style="margin-left: 5px;">
+						if preview.Locked {
+							<img src="/static/media/icons/lock.svg" alt="Locked" class="icon"/>
+						}
+						if preview.Pinned {
+							<img src="/static/media/icons/pin.svg" alt="Pinned" class="icon"/>
+						}
+					</span>
 				</div>
 				<h1 style="margin-top: 5px;">
 					<a href={ templ.URL(preview.ThreadURL) } class="catalog-preview-link">
