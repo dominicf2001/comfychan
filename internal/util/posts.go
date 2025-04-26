@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -43,27 +44,33 @@ const (
 	PostFileUnsupported
 )
 
+var urlRx = regexp.MustCompile(`(?i)\bhttps?://[^\s<]+`)
+
 func EnrichPost(body string) string {
 	var b strings.Builder
-	for _, rawLine := range strings.Split(body, "\n") {
-		var outLine string
 
-		for i, rawWord := range strings.Split(rawLine, " ") {
+	for _, rawLine := range strings.Split(body, "\n") {
+		line := urlRx.ReplaceAllStringFunc(rawLine, func(u string) string {
+			esc := template.HTMLEscapeString(u)
+			return fmt.Sprintf(
+				`<a href="%[1]s" target="_blank" rel="noopener noreferrer" class="ext-link">%[1]s</a>`,
+				esc,
+			)
+		})
+
+		var outLine string
+		for i, rawWord := range strings.Split(line, " ") {
 			var outWord string
 			if strings.HasPrefix(rawWord, ">>") {
 				postId := strings.TrimPrefix(rawWord, ">>")
-				esc := template.HTMLEscapeString(rawWord)
 				outWord = fmt.Sprintf(
-					`<a onclick="onReplyLinkClick(event)" 
-						 onmouseover="highlightPost(%[1]s, event)" `+
-						`onmouseleave="highlightPost(%[1]s, event, false)" `+
-						`href="#post-%[1]s" class="reply-link">%s</a>`,
-					postId, esc,
+					`<a onclick="onReplyLinkClick(event)" onmouseover="highlightPost(%[1]s,event)" `+
+						`onmouseleave="highlightPost(%[1]s,event,false)" href="#post-%[1]s" class="reply-link">%[2]s</a>`,
+					postId, template.HTMLEscapeString(rawWord),
 				)
 			} else {
-				outWord = template.HTMLEscapeString(rawWord)
+				outWord = rawWord
 			}
-
 			if i != 0 {
 				outLine += " "
 			}
