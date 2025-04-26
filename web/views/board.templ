@@ -31,19 +31,35 @@ templ Board(board database.Board, isAdmin bool) {
 			@shared.NewPostForm(board, fmt.Sprintf("/%s/threads", board.Slug), true)
 		</div>
 		<hr/>
-		<div id="boardActionBar">
-			<span>Image size: </span>
-			<select onchange="resizeCatalogPreviewImgs()" id="selectResize">
-				<option selected value="small">Small</option>
-				<option value="large">Large</option>
-			</select>
-			<span>Sort by: </span>
-			<select onchange="applyCatalogSort()" id="selectSortBy">
-				<option selected value="bumpedat">Bump order</option>
-				<option value="replycount">Reply count</option>
-			</select>
-			<input style="margin-left: 10px;" oninput="applyCatalogSearch()" id="catalogSearch" placeholder="Search"/>
-			<a style _="on click trigger refreshPosts on body" class="link-button">[Refresh]</a>
+		<div id="boardActionBar" class="action-bar">
+			<div class="action-item">
+				<label for="selectResize">Image size:</label>
+				<select id="selectResize" onchange="resizeCatalogPreviewImgs()">
+					<option value="small" selected>Small</option>
+					<option value="large">Large</option>
+				</select>
+			</div>
+			<div class="action-item">
+				<label for="selectSortBy">Sort by:</label>
+				<select id="selectSortBy" onchange="applyCatalogSort()">
+					<option value="bumpedat" selected>Bump order</option>
+					<option value="replycount">Reply count</option>
+				</select>
+			</div>
+			<div class="action-item action-search">
+				<input
+					type="search"
+					id="catalogSearch"
+					placeholder="Search"
+					oninput="applyCatalogSearch()"
+				/>
+			</div>
+			<div class="action-item">
+				<a
+					class="link-button"
+					_="on click trigger refreshPosts on body"
+				>[Refresh]</a>
+			</div>
 		</div>
 		<hr/>
 		<div

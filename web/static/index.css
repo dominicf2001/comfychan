@@ -87,23 +87,35 @@ body {
     width: 300px;
 }
 
-#boardActionBar {
-    font-size: 12px;
+.action-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 12pt;
+}
+
+.action-bar>* {
+    margin: 0;
+}
+
+.action-search {
+    flex: 1 1 150px;
 }
 
 /* THREAD CATALOG */
 
 #catalog {
-    display: flex;
-    margin: 2rem;
-    flex-wrap: wrap;
+    display: grid;
+    gap: 10px;
+    margin: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 }
 
 .catalog-preview {
     margin: 10px;
     text-align: center;
     padding: 10px;
-    width: 250px;
     max-height: 300px;
     overflow: hidden;
 }
@@ -153,7 +165,7 @@ body {
     right: 100%;
     margin-right: 6px;
     top: 50%;
-    left: 22%;
+    left: 5%;
     transform: translateY(-50%);
     display: flex;
 }
@@ -471,4 +483,21 @@ footer {
     max-width: 80%;
     display: block;
     margin: auto;
+}
+
+@media (max-width: 600px) {
+    .action-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .action-bar select,
+    .action-bar input,
+    .action-bar .link-button {
+        width: 100%0px;
+    }
+
+    .action-search {
+        flex: 1;
+    }
 }
