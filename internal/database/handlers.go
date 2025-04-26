@@ -99,62 +99,68 @@ func GetThread(db *sql.DB, threadId int) (Thread, error) {
 	return t, row.Err()
 }
 
-func PutThread(db *sql.DB, boardSlug string, subject string, body string, mediaPath string, thumbPath string, ip_hash string) (int, error) {
+func PutThread(db *sql.DB, boardSlug, subject, body, mediaPath, thumbPath, ipHash string) (int, error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return -1, err
 	}
-	defer tx.Rollback()
+	defer func() {
+		_ = tx.Rollback()
+	}()
 
-	res, err := tx.Exec(`
-		INSERT INTO threads (board_slug, subject) 
-		VALUES (?, ?) RETURNING id`, boardSlug, subject)
-
+	res, err := tx.Exec(
+		"INSERT INTO threads (board_slug, subject) VALUES (?, ?)",
+		boardSlug, subject,
+	)
 	if err != nil {
 		return -1, err
 	}
-
-	threadIdStr, err := res.LastInsertId()
+	threadId64, err := res.LastInsertId()
 	if err != nil {
 		return -1, err
 	}
+	threadId := int(threadId64)
 
-	if err := PutPost(tx, boardSlug, int(threadIdStr), body, mediaPath, thumbPath, ip_hash); err != nil {
+	if err := PutPost(tx, boardSlug, threadId, body, mediaPath, thumbPath, ipHash); err != nil {
 		return -1, err
 	}
 
-	row := tx.QueryRow("SELECT COUNT(*) FROM threads WHERE board_slug = ?", boardSlug)
-
-	var threadCount int
-	if err = row.Scan(&threadCount); err != nil {
+	var count int
+	if err := tx.QueryRow(`SELECT COUNT(*) FROM threads WHERE board_slug = ? AND pinned = 0`, boardSlug).
+		Scan(&count); err != nil {
 		return -1, err
 	}
 
-	if threadCount > util.MAX_THREAD_COUNT {
-		row := tx.QueryRow(`
-			SELECT id FROM threads
-			WHERE id = (
-				SELECT id FROM threads
-				WHERE board_slug = ?
-				ORDER BY bumped_at ASC
-				LIMIT 1)`, boardSlug)
+	for count >= util.MAX_THREAD_COUNT {
+		var pruneID int
+		err := tx.QueryRow(`
+            SELECT id
+            FROM threads
+            WHERE board_slug = ? AND pinned = 0
+            ORDER BY bumped_at ASC
+            LIMIT 1
+        `, boardSlug).Scan(&pruneID)
 
-		var pruneThreadId int
-		err := row.Scan(&pruneThreadId)
+		if errors.Is(err, sql.ErrNoRows) {
+			break
+		}
 		if err != nil {
 			return -1, err
 		}
-
-		if err := DeleteThread(tx, pruneThreadId); err != nil {
+		if err := DeleteThread(tx, pruneID); err != nil {
+			return -1, err
+		}
+		if err := tx.QueryRow(
+			`SELECT COUNT(*) FROM threads WHERE board_slug = ? AND pinned = 0`,
+			boardSlug).Scan(&count); err != nil {
 			return -1, err
 		}
 	}
 
-	if err = tx.Commit(); err != nil {
+	if err := tx.Commit(); err != nil {
 		return -1, err
 	}
-
-	return int(threadIdStr), nil
+	return threadId, nil
 }
 
 func DeleteThread(db Queryer, threadId int) error {
