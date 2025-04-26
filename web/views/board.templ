@@ -46,19 +46,19 @@ templ Board(board database.Board, isAdmin bool) {
 					<option value="replycount">Reply count</option>
 				</select>
 			</div>
-			<div class="action-item action-search">
+			<div class="action-item action-refresh">
+				<a
+					class="link-button"
+					_="on click trigger refreshPosts on body"
+				>[Refresh]</a>
+			</div>
+			<div class="action-item">
 				<input
 					type="search"
 					id="catalogSearch"
 					placeholder="Search"
 					oninput="applyCatalogSearch()"
 				/>
-			</div>
-			<div class="action-item">
-				<a
-					class="link-button"
-					_="on click trigger refreshPosts on body"
-				>[Refresh]</a>
 			</div>
 		</div>
 		<hr/>

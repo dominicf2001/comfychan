@@ -102,9 +102,7 @@ templ PostOriginal(post database.Post, thread database.Thread) {
 				}
 			</span>
 			<h1 class="thread-subject">
-				if thread.Subject != "" {
-					{ thread.Subject } -
-				}
+				{ thread.Subject }
 			</h1>
 			<span class="post-author">{ post.Author }</span>
 			<span class="post-date">{ post.CreatedAt.Format("01/02/2006") }</span>

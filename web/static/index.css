@@ -99,7 +99,7 @@ body {
     margin: 0;
 }
 
-.action-search {
+.action-refresh {
     flex: 1 1 150px;
 }
 
@@ -486,9 +486,13 @@ footer {
 }
 
 @media (max-width: 600px) {
+    body {
+        margin: 0;
+    }
+
     .action-bar {
         flex-direction: column;
-        align-items: stretch;
+        justify-items: center;
     }
 
     .action-bar select,
@@ -497,7 +501,7 @@ footer {
         width: 100%0px;
     }
 
-    .action-search {
+    .action-refresh {
         flex: 1;
     }
 }
