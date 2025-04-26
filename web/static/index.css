@@ -31,10 +31,12 @@
 /* ----------  Global ---------- */
 
 body {
+    font-family: Verdana, Tahoma, sans-serif;
     background: var(--bg-main);
     padding-left: 4px;
     padding-right: 4px;
     margin: 0 4px;
+    font-size: 10pt;
 }
 
 /* INDEX */
@@ -228,7 +230,6 @@ body {
 
 .post-op {
     margin-bottom: 10px;
-    font-size: 14px;
 }
 
 .post {
@@ -238,7 +239,6 @@ body {
     background-color: var(--post-bg);
     border: 1px solid var(--border-light);
     margin-bottom: 10px;
-    font-size: 14px;
 }
 
 .post-highlighted {
