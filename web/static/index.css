@@ -287,6 +287,11 @@ body {
     max-width: 100%;
 }
 
+.post-file-loading {
+    opacity: .4;
+    transition: opacity .2s;
+}
+
 .post-img-info {
     display: inline-block;
     font-size: 10px;
