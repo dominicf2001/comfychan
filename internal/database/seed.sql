@@ -57,8 +57,8 @@ CREATE TABLE IF NOT EXISTS bans (
 
 INSERT INTO boards (slug, name, tag) VALUES 
     ('c', 'Comfy', 'Be comfy, fren'),
-    ('r', 'Robots', ''),
-    ('gn', 'Goon', '');
+    ('r', 'Robots', 'Beep, boop'),
+    ('gn', 'Goon', 'God is watching');
 
 INSERT INTO admins (username, password) VALUES
     ('admin', '$2a$10$vRP4/9O6SwyUziEUtBLQM.r9C2WujIIZ6yEgqGjhlBaFPvtpfdHPC');

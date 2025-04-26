@@ -3,7 +3,7 @@ internal/database/comfychan.db
 tmp
 out
 
-./media
+media/
 
 # Devenv
 .devenv*
