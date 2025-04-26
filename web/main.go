@@ -369,22 +369,20 @@ func main() {
 		mediaPath := ""
 		thumbPath := ""
 
-		if body == "" {
-			http.Error(w, "Body is empty", http.StatusBadRequest)
-			return
-		}
-
 		if len(body) > util.MAX_BODY_LEN {
 			http.Error(w, fmt.Sprintf("Body exceeds %d characters", util.MAX_BODY_LEN), http.StatusBadRequest)
 			return
 		}
 
+		fileIsEmpty := false
 		file, header, err := r.FormFile("file")
 		if err != nil {
 			if !errors.Is(err, http.ErrMissingFile) {
 				http.Error(w, "Failed to retrieve file from form", http.StatusBadRequest)
 				log.Printf("FormFile: %v", err)
 				return
+			} else {
+				fileIsEmpty = true
 			}
 		} else {
 			defer file.Close()
@@ -415,6 +413,11 @@ func main() {
 			}
 			mediaPath = savedMediaPath
 			thumbPath = savedThumbPath
+		}
+
+		if body == "" && fileIsEmpty {
+			http.Error(w, "No body or file provided", http.StatusBadRequest)
+			return
 		}
 
 		if err := database.PutPost(db, slug, threadId, body, mediaPath, thumbPath, ipHash); err != nil {

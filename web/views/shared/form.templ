@@ -40,7 +40,15 @@ templ NewPostForm(board database.Board, endpoint string, isForThread bool) {
 				</tr>
 				<tr class="new-post-form-field">
 					<th>Comment</th>
-					<td><textarea id="newPostBody" name="body" required></textarea></td>
+					<td>
+						<textarea
+							id="newPostBody"
+							name="body"
+							if isForThread {
+								required
+							}
+						></textarea>
+					</td>
 				</tr>
 				<tr class="new-post-form-field">
 					<th>File</th>
