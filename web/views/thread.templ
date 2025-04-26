@@ -101,7 +101,11 @@ templ PostOriginal(post database.Post, thread database.Thread) {
 					<img src="/static/media/icons/pin.svg" alt="Pinned" class="icon"/>
 				}
 			</span>
-			<h1 class="thread-subject">{ thread.Subject } -</h1>
+			<h1 class="thread-subject">
+				if thread.Subject != "" {
+					{ thread.Subject } -
+				}
+			</h1>
 			<span class="post-author">{ post.Author }</span>
 			<span class="post-date">{ post.CreatedAt.Format("01/02/2006") }</span>
 			<span class="post-time">{ post.CreatedAt.Format("15:04") }</span>
