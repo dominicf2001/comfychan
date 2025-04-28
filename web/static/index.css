@@ -529,4 +529,8 @@ footer {
     .post-img-full {
         max-width: 100%;
     }
+
+    textarea {
+        font-size: 16px;
+    }
 }

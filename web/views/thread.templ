@@ -6,6 +6,7 @@ import (
 	"github.com/dominicf2001/comfychan/internal/util"
 	"github.com/dominicf2001/comfychan/web/views/shared"
 	"strconv"
+	"time"
 )
 
 templ PostAdminDialog(post database.Post) {
@@ -105,8 +106,7 @@ templ PostOriginal(post database.Post, thread database.Thread) {
 				{ thread.Subject }
 			</h1>
 			<span class="post-author">{ post.Author }</span>
-			<span class="post-date">{ post.CreatedAt.Format("01/02/2006") }</span>
-			<span class="post-time">{ post.CreatedAt.Format("15:04") }</span>
+			<span class="post-datetime" data-utc={ post.CreatedAt.UTC().Format(time.RFC3339) }></span>
 			<span
 				_={ fmt.Sprintf(`
 				on click set #newPostBody.value to #newPostBody.value + '>>%d\n'
@@ -138,8 +138,7 @@ templ PostReply(post database.Post, threadContext ThreadContext) {
 				</span>
 			}
 			<span class="post-author">{ post.Author }</span>
-			<span class="post-date">{ post.CreatedAt.Format("01/02/2006") }</span>
-			<span class="post-time">{ post.CreatedAt.Format("15:04") }</span>
+			<span class="post-datetime" data-utc={ post.CreatedAt.UTC().Format(time.RFC3339) }></span>
 			<span
 				_={ fmt.Sprintf(`
 				on click set #newPostBody.value to #newPostBody.value + '>>%d\n' 
@@ -232,7 +231,7 @@ templ Thread(board database.Board, thread database.Thread, posts []database.Post
 			class="thread"
 			hx-get={ fmt.Sprintf("/hx/%s/threads/%d/posts", thread.BoardSlug, thread.Id) }
 			hx-trigger="refreshPosts from:body"
-			_="on htmx:afterSwap call insertHeaderReplies() then smoothScrollTo('bottom')"
+			_="on htmx:afterSwap call initializePosts() then smoothScrollTo('bottom')"
 		>
 			@Posts(posts, thread, threadContext)
 		</div>

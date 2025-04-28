@@ -77,4 +77,24 @@ function togglePostFile(el) {
     }
 }
 
-insertHeaderReplies()
+function initializePosts() {
+    // set dates to correct timezone
+    document.querySelectorAll('.post-datetime').forEach(el => {
+        const utcDateStr = el.getAttribute('data-utc');
+        const localDate = new Date(utcDateStr);
+
+        const hours = localDate.getHours() % 12 || 12;
+        const minutes = String(localDate.getMinutes()).padStart(2, '0');
+        const ampm = localDate.getHours() >= 12 ? 'PM' : 'AM';
+
+        const month = String(localDate.getMonth() + 1).padStart(2, '0');
+        const day = String(localDate.getDate()).padStart(2, '0');
+        const year = localDate.getFullYear();
+
+        el.textContent = `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`;
+    });
+
+    insertHeaderReplies()
+}
+
+initializePosts();
