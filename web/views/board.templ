@@ -20,7 +20,7 @@ templ BoardHeader(board database.Board) {
 }
 
 templ Board(board database.Board, isAdmin bool) {
-	@shared.Layout() {
+	@shared.Layout(fmt.Sprintf("/%s/ - %s", board.Slug, board.Name)) {
 		@BoardHeader(board)
 		<div class="new-post-container">
 			<button

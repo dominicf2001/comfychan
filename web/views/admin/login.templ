@@ -3,7 +3,7 @@ package admin
 import "github.com/dominicf2001/comfychan/web/views/shared"
 
 templ AdminLogin() {
-	@shared.Layout() {
+	@shared.Layout("Authorize - Comfychan") {
 		<div class="admin-login-container">
 			<div style="display: none" id="adminLoginWarning" class="warning"></div>
 			<form

@@ -219,7 +219,7 @@ templ ThreadActionBar(thread database.Thread, pos string) {
 }
 
 templ Thread(board database.Board, thread database.Thread, posts []database.Post, threadContext ThreadContext) {
-	@shared.Layout() {
+	@shared.Layout(fmt.Sprintf("/%s/ - %s", board.Slug, thread.Subject+" "+posts[0].Body)) {
 		<script src="/static/thread.js" defer></script>
 		@BoardHeader(board)
 		<div class="new-post-container">
