@@ -45,16 +45,15 @@ body {
 
 #clavis {
     display: block;
-    width: 300px;
-    margin: 10px auto;
-    margin-bottom: 50px;
+    max-width: 300px;
+    margin: 25px auto;
 }
 
 /* BOARD LIST */
 
 #boardList {
-    font-size: 14px;
-    margin: 5px;
+    font-size: 12pt;
+    margin: 10px;
 }
 
 #boardList a {
@@ -69,6 +68,7 @@ body {
 /* BOARD */
 
 .board-header {
+    margin: 25px auto;
     text-align: center;
     color: var(--brand-red);
 }
@@ -276,7 +276,7 @@ body {
 .post-img {
     display: block;
     float: left;
-    margin: 4px 12px 4px 0;
+    margin: 8px 8px 8px 0;
     cursor: pointer;
     height: auto;
     max-width: 50%;
@@ -285,7 +285,7 @@ body {
 .post-vid {
     display: block;
     float: left;
-    margin: 4px 12px 4px 0;
+    margin: 8px 8px 8px 0;
     height: auto;
     max-width: 100%;
 }
@@ -412,7 +412,7 @@ body {
 /* GENERAL LAYOUT */
 
 .container {
-    width: 600px;
+    max-width: 600px;
     margin: auto;
 }
 
@@ -519,10 +519,14 @@ footer {
     .action-bar select,
     .action-bar input,
     .action-bar .link-button {
-        width: 100%0px;
+        width: 100%;
     }
 
     .action-refresh {
         flex: 1;
+    }
+
+    .post-img-full {
+        max-width: 100%;
     }
 }
