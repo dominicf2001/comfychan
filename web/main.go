@@ -71,9 +71,6 @@ func main() {
 	// init paths
 
 	dataDir := os.Getenv("COMFYCHAN_DATA_DIR")
-	if dataDir == "" {
-		dataDir = "." // for development
-	}
 
 	util.POST_MEDIA_FULL_PATH = filepath.Join(dataDir, util.POST_MEDIA_FULL_PATH)
 	util.POST_MEDIA_THUMB_PATH = filepath.Join(dataDir, util.POST_MEDIA_THUMB_PATH)
