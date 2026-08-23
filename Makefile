@@ -2,9 +2,9 @@ live/templ:
 	templ generate --watch --proxy="http://localhost:8080" --cmd="go run ./web" --open-browser=false -v
 
 live/sync_assets:
-	go run github.com/air-verse/air@v1.61.7 \
+	go run github.com/air-verse/air@latest \
 	--build.cmd "templ generate --notify-proxy" \
-	--build.bin "true" \
+	--build.full_bin "true" \
 	--build.delay "100" \
 	--build.exclude_dir "" \
 	--build.include_dir "web/static" \
@@ -17,21 +17,8 @@ db/seed:
 	sqlite3 ./internal/database/comfychan.db < ./internal/database/seed.sql
 
 db/seed/f:
-	rm ./internal/database/comfychan.db && sqlite3 ./internal/database/comfychan.db < ./internal/database/seed.sql
+	rm ./internal/database/comfychan.db && make db/seed
 
-
-build: 
+build:
 	templ generate
 	go build -o ./out/comfychan ./web
-
-deploy:
-	sudo mkdir -p /var/lib/comfychan/web/static
-	sudo mkdir -p /var/lib/comfychan/internal/database
-	sudo cp ./out/comfychan /srv/comfychan/
-	sudo cp -r web/static/* /var/lib/comfychan/web/static/
-
-db/deploy:
-	sudo mkdir -p /var/lib/comfychan/internal/database
-	sudo sqlite3 /var/lib/comfychan/internal/database/comfychan.db < ./internal/database/seed.sql
-	sudo chown comfychan:comfychan /var/lib/private/comfychan/internal/database/comfychan.db
-
