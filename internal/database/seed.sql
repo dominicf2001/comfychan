@@ -11,8 +11,8 @@ CREATE TABLE IF NOT EXISTS boards (
     tag TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS threads ( 
-    id INTEGER PRIMARY KEY AUTOINCREMENT, 
+CREATE TABLE IF NOT EXISTS threads (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     board_slug TEXT NOT NULL,
     subject TEXT NOT NULL DEFAULT '',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS bans (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     ip_hash TEXT NOT NULL UNIQUE,
     reason TEXT NOT NULL,
-    expiration DATETIME NOT NULL 
+    expiration DATETIME NOT NULL
 );
 
 -- ======================
@@ -55,10 +55,10 @@ CREATE TABLE IF NOT EXISTS bans (
 
 -- Boards
 
-INSERT INTO boards (slug, name, tag) VALUES 
+INSERT INTO boards (slug, name, tag) VALUES
     ('c', 'Comfy', 'Be comfy, fren'),
     ('r', 'Robots', 'Beep, boop'),
     ('gn', 'Goon', 'God is watching');
 
 INSERT INTO admins (username, password) VALUES
-    ('admin', '$2a$10$vRP4/9O6SwyUziEUtBLQM.r9C2WujIIZ6yEgqGjhlBaFPvtpfdHPC');
+    ('admin', '$2a$10$hzmcLK2ZrEz0NTxr7eVuV.gn8shW.tQxD0D0vYUgAwADZly3U/BZ.');
