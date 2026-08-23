@@ -20,7 +20,7 @@ type Queryer interface {
 
 func GetBoards(db *sql.DB) ([]Board, error) {
 	rows, err := db.Query(`
-		SELECT id, name, slug, tag 
+		SELECT id, name, slug, tag
 		FROM boards ORDER BY slug`)
 
 	if err != nil {
@@ -43,8 +43,8 @@ func GetBoards(db *sql.DB) ([]Board, error) {
 
 func GetBoard(db *sql.DB, slug string) (Board, error) {
 	row := db.QueryRow(`
-		SELECT id, name, slug, tag 
-		FROM boards 
+		SELECT id, name, slug, tag
+		FROM boards
 		WHERE slug = ?`, slug)
 
 	var result Board
@@ -58,8 +58,8 @@ func GetBoard(db *sql.DB, slug string) (Board, error) {
 
 func GetThreads(db *sql.DB, boardSlug string) ([]Thread, error) {
 	rows, err := db.Query(`
-		SELECT id, board_slug, subject, created_at, bumped_at, pinned, locked 
-		FROM threads 
+		SELECT id, board_slug, subject, created_at, bumped_at, pinned, locked
+		FROM threads
 		WHERE board_slug = ?`, boardSlug)
 
 	if err != nil {
@@ -84,8 +84,8 @@ func GetThreads(db *sql.DB, boardSlug string) ([]Thread, error) {
 
 func GetThread(db *sql.DB, threadId int) (Thread, error) {
 	row := db.QueryRow(`
-		SELECT id, board_slug, subject, created_at, bumped_at, pinned, locked 
-		FROM threads 
+		SELECT id, board_slug, subject, created_at, bumped_at, pinned, locked
+		FROM threads
 		WHERE id = ?`, threadId)
 
 	var t Thread
@@ -212,9 +212,9 @@ func DeleteThread(db Queryer, threadId int) error {
 
 func GetPosts(db *sql.DB, threadId int) ([]Post, error) {
 	rows, err := db.Query(`
-		SELECT id, thread_id, author, body, created_at, media_path, 
-			   ip_hash, number, thumb_path, banned 
-		FROM posts 
+		SELECT id, thread_id, author, body, created_at, media_path,
+			   ip_hash, number, thumb_path, banned
+		FROM posts
 		WHERE thread_id = ?`, threadId)
 
 	if err != nil {
@@ -239,10 +239,10 @@ func GetPosts(db *sql.DB, threadId int) ([]Post, error) {
 
 func GetOriginalPost(db *sql.DB, threadId int) (Post, error) {
 	row := db.QueryRow(`
-		SELECT id, thread_id, author, body, created_at, media_path, 
+		SELECT id, thread_id, author, body, created_at, media_path,
 			   ip_hash, number, thumb_path, banned
-		FROM posts 
-		WHERE thread_id = ? 
+		FROM posts
+		WHERE thread_id = ?
 		ORDER BY created_at ASC LIMIT 1`, threadId)
 
 	var r Post
@@ -257,9 +257,9 @@ func GetOriginalPost(db *sql.DB, threadId int) (Post, error) {
 
 func GetPost(db *sql.DB, postId int) (Post, error) {
 	row := db.QueryRow(`
-		SELECT id, thread_id, author, body, created_at, media_path, 
+		SELECT id, thread_id, author, body, created_at, media_path,
 			   ip_hash, number, thumb_path, banned
-		FROM posts 
+		FROM posts
 		WHERE id = ?`, postId)
 
 	var r Post
@@ -275,7 +275,7 @@ func GetPost(db *sql.DB, postId int) (Post, error) {
 func PutPost(db Queryer, boardSlug string, threadId int, body string, mediaPath string, thumbPath string, ip_hash string) error {
 	row := db.QueryRow(`
 		SELECT MAX(p.number)
-		FROM posts p 
+		FROM posts p
 		INNER JOIN threads t ON p.thread_id = t.id
 		WHERE t.board_slug = ?`, boardSlug)
 
@@ -290,7 +290,7 @@ func PutPost(db Queryer, boardSlug string, threadId int, body string, mediaPath 
 	}
 
 	_, err := db.Exec(`
-		INSERT INTO posts (thread_id, body, media_path, ip_hash, number, thumb_path) 
+		INSERT INTO posts (thread_id, body, media_path, ip_hash, number, thumb_path)
 		VALUES (?, ?, ?, ?, ?, ?)`, threadId, body, mediaPath, ip_hash, newPostNumber, thumbPath)
 	if err != nil {
 		return err
@@ -337,7 +337,7 @@ func DeletePost(db *sql.DB, postId int) error {
 
 	// delete post
 	_, err := db.Exec(`
-		DELETE FROM posts 
+		DELETE FROM posts
 		WHERE id = ?`, postId)
 	if err != nil {
 		return err
@@ -364,7 +364,7 @@ var ErrBanNotFound = errors.New("ban not found")
 
 func GetBan(db *sql.DB, ip string) (Ban, error) {
 	row := db.QueryRow(`
-		SELECT ip_hash, reason, expiration 
+		SELECT ip_hash, reason, expiration
 		FROM bans
 		where ip_hash = ?`, ip)
 
@@ -398,7 +398,7 @@ func GetAdmin(db *sql.DB, username string) (Admin, error) {
 
 	var result Admin
 	if err := row.Scan(&result.Username, &result.Password); err != nil {
-		return Admin{}, nil
+		return Admin{}, err
 	}
 
 	return result, nil
