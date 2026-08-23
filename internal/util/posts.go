@@ -50,16 +50,8 @@ func EnrichPost(body string) string {
 	var b strings.Builder
 
 	for _, rawLine := range strings.Split(body, "\n") {
-		line := urlRx.ReplaceAllStringFunc(rawLine, func(u string) string {
-			esc := template.HTMLEscapeString(u)
-			return fmt.Sprintf(
-				`<a href="%[1]s" target="_blank" rel="noopener noreferrer" class="ext-link">%[1]s</a>`,
-				esc,
-			)
-		})
-
 		var outLine string
-		for i, rawWord := range strings.Split(line, " ") {
+		for i, rawWord := range strings.Split(rawLine, " ") {
 			var outWord string
 			if strings.HasPrefix(rawWord, ">>") {
 				postId := strings.TrimPrefix(rawWord, ">>")
@@ -68,8 +60,13 @@ func EnrichPost(body string) string {
 						`onmouseleave="highlightPost(%[1]s,event,false)" href="#post-%[1]s" class="reply-link">%[2]s</a>`,
 					postId, template.HTMLEscapeString(rawWord),
 				)
+			} else if urlRx.MatchString(rawWord) {
+				outWord = fmt.Sprintf(
+					`<a href="%[1]s" target="_blank" rel="noopener noreferrer" class="ext-link">%[1]s</a>`,
+					template.HTMLEscapeString(rawWord),
+				)
 			} else {
-				outWord = rawWord
+				outWord = template.HTMLEscapeString(rawWord)
 			}
 			if i != 0 {
 				outLine += " "
