@@ -1,5 +1,5 @@
 live/templ:
-	templ generate --watch --proxy="http://localhost:8080" --cmd="go run ./web" --open-browser=false -v
+	templ generate --watch --proxy="http://localhost:7676" --cmd="go run ./web" --open-browser=false -v
 
 live/sync_assets:
 	go run github.com/air-verse/air@latest \
