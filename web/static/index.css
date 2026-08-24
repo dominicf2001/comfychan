@@ -3,11 +3,12 @@
     --bg-main: #1d1f21;
     --text-color: #c5c8c6;
     --text-muted: #85a28a;
-    --brand-red: #85280b;
+    --brand-green: #4e5f3f;
+    --brand-yellow: #db9f12;
 
     --form-header-bg: #282a2e;
     --border-light: #282a2e;
-    --subject: #db9f12;
+    --subject: #718a5b;
     --link-secondary: #85a28a;
 
     --post-bg: #282a2e;
@@ -18,7 +19,7 @@
     --reply-link: #85a28a;
     --dialog-bg: #EDEFF7;
 
-    --danger: #977732;
+    --danger: #4e5f3f;
     --warning-bg: #929661;
     --black: #000000;
 
@@ -71,7 +72,6 @@ a:hover {
 .board-header {
     margin: 25px auto;
     text-align: center;
-    color: var(--brand-red);
 }
 
 .board-header h1 {
@@ -79,11 +79,14 @@ a:hover {
     font-size: 1.8rem;
     margin: 8px;
     margin-top: 12px;
+    color: var(--brand-yellow);
 }
 
 .board-header p {
     font-size: .8rem;
     margin: 4px;
+    font-style: italic;
+    color: var(--brand-yellow);
 }
 
 .board-header img {
@@ -434,6 +437,10 @@ a:hover {
 
 .box-table td {
     padding: 5px;
+}
+
+.box-table tbody tr:nth-child(even) {
+    background-color: color-mix(in srgb, var(--box-bg) 85%, black);
 }
 
 .box h2,

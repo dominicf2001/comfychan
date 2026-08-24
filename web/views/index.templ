@@ -4,16 +4,40 @@ import "github.com/dominicf2001/comfychan/web/views/shared"
 
 templ Index() {
 	@shared.Layout("Comfychan") {
+		<img style="width: 150px; float: right;" src="/static/media/comfychan.png"/>
 		<section class="container">
-			<img id="clavis" src="/static/media/clavis.png"/>
 			<div class="box">
 				<h2>Welcome to Comfychan</h2>
 				<div>
 					<p>
-						<strong>Comfychan</strong> is place to share comfy images and videos.
+						<strong>Comfychan</strong> is place to share comfy images, videos and retardation.
 					</p>
 				</div>
 			</div>
+		</section>
+		<section style="margin-top: 25px;" class="container">
+			<table class="box-table">
+				<thead>
+					<tr>
+						<th>Board</th>
+						<th>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><a href="/c">/c/ - Comfy</a></td>
+						<td>Stay awhile</td>
+					</tr>
+					<tr>
+						<td><a href="/r">/r/ - Robots</a></td>
+						<td>Beep, boop</td>
+					</tr>
+					<tr>
+						<td><a href="/gn">/gn/ - Goon</a></td>
+						<td>God is watching</td>
+					</tr>
+				</tbody>
+			</table>
 		</section>
 	}
 }

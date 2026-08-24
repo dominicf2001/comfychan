@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS bans (
 -- Boards
 
 INSERT INTO boards (slug, name, tag) VALUES
-    ('c', 'Comfy', 'Be comfy, fren'),
+    ('c', 'Comfy', 'Stay awhile'),
     ('r', 'Robots', 'Beep, boop'),
     ('gn', 'Goon', 'God is watching');
 
