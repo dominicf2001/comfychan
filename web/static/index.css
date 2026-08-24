@@ -2,27 +2,27 @@
 :root {
     --bg-main: #1d1f21;
     --text-color: #c5c8c6;
-    --text-muted: #81a2be;
-    --brand-red: #c5c8c6;
+    --text-muted: #85a28a;
+    --brand-red: #85280b;
 
     --form-header-bg: #282a2e;
     --border-light: #282a2e;
-    --subject: #b294bb;
-    --link-secondary: #81a2be;
+    --subject: #db9f12;
+    --link-secondary: #85a28a;
 
     --post-bg: #282a2e;
     --post-highlight: #D6BAD0;
     --post-author: #c5c8c6;
-    --greentext: #b5bd68;
+    --greentext: #949055;
 
-    --reply-link: #81a2be;
+    --reply-link: #85a28a;
     --dialog-bg: #EDEFF7;
 
-    --danger: #b294bb;
-    --warning-bg: #b294bb;
+    --danger: #977732;
+    --warning-bg: #929661;
     --black: #000000;
 
-    --heading-bg: #b294bb45;
+    --heading-bg: #4e5f3f;
     --heading-text: #FFFFFF;
     --box-bg: #282a2e;
 
@@ -61,7 +61,8 @@ a:hover {
 /* BOARD LIST */
 
 #boardList {
-    font-size: 12pt;
+    cursor: default;
+    font-size: 14pt;
     margin: 10px;
 }
 
@@ -87,6 +88,7 @@ a:hover {
 
 .board-header img {
     width: 300px;
+    height: 100px;
 }
 
 .action-bar {
@@ -440,6 +442,7 @@ a:hover {
     margin: 0;
     background-color: var(--heading-bg);
     color: var(--heading-text);
+    font-weight: bold;
 }
 
 .box p {
