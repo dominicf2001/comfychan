@@ -49,12 +49,11 @@ var urlRx = regexp.MustCompile(`(?i)\bhttps?://[^\s<]+`)
 func EnrichPost(body string) string {
 	var b strings.Builder
 
-	for _, rawLine := range strings.Split(body, "\n") {
+	for rawLine := range strings.SplitSeq(body, "\n") {
 		var outLine string
 		for i, rawWord := range strings.Split(rawLine, " ") {
 			var outWord string
-			if strings.HasPrefix(rawWord, ">>") {
-				postId := strings.TrimPrefix(rawWord, ">>")
+			if postId, ok := strings.CutPrefix(rawWord, ">>"); ok {
 				outWord = fmt.Sprintf(
 					`<a onclick="onReplyLinkClick(event)" onmouseover="highlightPost(%[1]s,event)" `+
 						`onmouseleave="highlightPost(%[1]s,event,false)" href="#post-%[1]s" class="reply-link">%[2]s</a>`,
