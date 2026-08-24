@@ -41,6 +41,15 @@ body {
     color: var(--text-color)
 }
 
+a {
+    cursor: pointer;
+    color: var(--text-muted);
+}
+
+a:hover {
+    color: var(--danger);
+}
+
 /* INDEX */
 
 #clavis {
@@ -54,15 +63,6 @@ body {
 #boardList {
     font-size: 12pt;
     margin: 10px;
-}
-
-#boardList a {
-    cursor: pointer;
-    color: var(--text-muted);
-}
-
-#boardList a:hover {
-    color: var(--danger);
 }
 
 /* BOARD */
@@ -422,7 +422,20 @@ body {
     background-color: var(--box-bg);
 }
 
-.box h2 {
+.box-table {
+    font-size: 10pt;
+    border: 1px solid var(--black);
+    background-color: var(--box-bg);
+    width: 100%;
+    text-align: center;
+}
+
+.box-table td {
+    padding: 5px;
+}
+
+.box h2,
+.box-table th {
     padding: 5px;
     margin: 0;
     background-color: var(--heading-bg);
